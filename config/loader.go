@@ -8,6 +8,7 @@ import (
 )
 
 var appConfig AppConfig
+var dbConfig DatabaseConfig
 
 func SetupConfig() error {
 	configFile := "application"
@@ -35,6 +36,10 @@ func LoadConfig() {
 		errs = append(errs, err)
 	}
 
+	if err := LoadDBConfig(); err != nil {
+		errs = append(errs, err)
+	}
+
 	if len(errs) != 0 {
 		panic(errs)
 	}
@@ -48,6 +53,17 @@ func LoadAppConfig() error {
 	return nil
 }
 
+func LoadDBConfig() error {
+	if err := viper.Unmarshal(&dbConfig); err != nil {
+		return fmt.Errorf("LoadDBConfig : fail to load db config, %v", err)
+	}
+	return nil
+}
+
 func GetAppConfig() AppConfig {
 	return appConfig
+}
+
+func GetDBConfig() DatabaseConfig {
+	return dbConfig
 }
