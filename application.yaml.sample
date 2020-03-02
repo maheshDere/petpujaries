@@ -1,2 +1,10 @@
 ServerPort : 8080
 LogFile : "./pet-pujari.log"
+Host : "SampleHost"
+Port : 5432
+User : "SampleUser"
+Password : "SamplePassword"
+SslMode : "disable"
+DBName : "SampleDbName"
+MaxPoolSize : 10
+MaxIdleConnections : 5
