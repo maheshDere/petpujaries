@@ -8,3 +8,4 @@ SslMode : "disable"
 DBName : "SampleDbName"
 MaxPoolSize : 10
 MaxIdleConnections : 5
+LogFile : "./error.log"
