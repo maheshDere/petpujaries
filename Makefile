@@ -9,5 +9,5 @@ service-run:
 	ENVIRONMENT=development go run main.go
 
 test:
-	ENVIRONMENT=test go run main.go
+	ENVIRONMENT=test go test -v ./...  
 
