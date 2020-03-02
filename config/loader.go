@@ -25,7 +25,7 @@ func SetupConfig() error {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			return fmt.Errorf("SetupConfig: Config file not found")
 		}
-		return fmt.Errorf("SetupConfig: Config file can not load errors", err)
+		return fmt.Errorf("SetupConfig: Config file can not load errors %v", err)
 	}
 	return nil
 }
