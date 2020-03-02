@@ -48,7 +48,7 @@ func LoadConfig() {
 
 func LoadAppConfig() error {
 	if err := viper.Unmarshal(&appConfig); err != nil {
-		return fmt.Errorf("unable to decode into struct, %v", err)
+		return fmt.Errorf("LoadAppConfig : fail to load app config, %v", err)
 	}
 	return nil
 }
