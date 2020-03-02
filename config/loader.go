@@ -21,6 +21,7 @@ func SetupConfig() error {
 	viper.SetConfigName(configFile)
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("./../")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			return fmt.Errorf("SetupConfig: Config file not found")

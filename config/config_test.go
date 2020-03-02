@@ -15,6 +15,25 @@ func TestDatabaseSourceURL(t *testing.T) {
 	assert.Equal(t, expectedSourceURL, actualSourceURL)
 }
 
+func TestGetDBConfig(t *testing.T) {
+	err := SetupConfig()
+	LoadConfig()
+	assert.NoError(t, err)
+	dbconfig := GetDBConfig()
+
+	expectedDBConfig := DatabaseConfig{
+		Host:               "SampleHost",
+		Port:               5432,
+		User:               "SampleUser",
+		Password:           "SamplePassword",
+		SslMode:            "disable",
+		DBName:             "SampleDbName",
+		MaxPoolSize:        10,
+		MaxIdleConnections: 5,
+	}
+	assert.Equal(t, expectedDBConfig, dbconfig)
+}
+
 func getDatabaseConfig() DatabaseConfig {
 	return DatabaseConfig{
 		Host:               "SampleHost",
