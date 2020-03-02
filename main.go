@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"petpujaris/config"
 )
 
@@ -10,5 +9,5 @@ func main() {
 		panic(err)
 	}
 	config.LoadConfig()
-	fmt.Println(config.GetAppConfig())
+
 }
