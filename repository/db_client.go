@@ -1,15 +1,25 @@
 package repository
 
 import (
+	"context"
 	"petpujaris/config"
 
 	"petpujaris/logger"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 type PgClient struct {
 	db *sqlx.DB
+}
+
+type Client interface {
+	QueryRowxContext(ctx context.Context, cmd Command, args ...interface{}) *sqlx.Row
+}
+
+func (pgClient PgClient) QueryRowxContext(ctx context.Context, cmd Command, args ...interface{}) *sqlx.Row {
+	return pgClient.db.QueryRowxContext(ctx, cmd.GetQuery(), args...)
 }
 
 func NewPgClient(dbcfg config.DatabaseConfig) (PgClient, error) {
