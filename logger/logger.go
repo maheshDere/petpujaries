@@ -30,6 +30,9 @@ func Close() {
 	logFile.Close()
 }
 
+func LogInfo(fields logrus.Fields, info string) {
+	logger.WithFields(logrus.Fields(fields)).Info(info)
+}
 func LogError(err error, where, errMsg string) {
 	fields := logrus.Fields{"Error": err.Error(), "Where": where}
 	logger.WithFields(logrus.Fields(fields)).Error(errMsg)

@@ -8,14 +8,15 @@ import (
 
 func main() {
 	err := startServer()
-	panic(err)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func startServer() error {
 	if err := config.SetupConfig(); err != nil {
-		panic(err)
+		return err
 	}
-
 	config.LoadConfig()
 	logger.Setup()
 	defer logger.Close()

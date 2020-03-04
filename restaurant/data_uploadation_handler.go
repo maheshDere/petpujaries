@@ -1,9 +1,11 @@
 package restaurant
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"petpujaris/logger"
 )
@@ -26,11 +28,21 @@ func RestaurantCSVHandler() http.HandlerFunc {
 }
 
 func parseCSVFile(req *http.Request) ([][]string, error) {
-	// parse POST body as csv
-	reader := csv.NewReader(req.Body)
+	file, _, err := req.FormFile("csvfile")
+	if err != nil {
+		return nil, err
+	}
+	byteData, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	reader := csv.NewReader(bytes.NewReader(byteData))
+	reader.LazyQuotes = true
+	reader.Comma = ','
+	reader.FieldsPerRecord = -1
 	var results [][]string
 	for {
-		// read one row from csv
 		record, err := reader.Read()
 		if err == io.EOF {
 			break
@@ -38,8 +50,6 @@ func parseCSVFile(req *http.Request) ([][]string, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		// add record to result set
 		results = append(results, record)
 	}
 	return results, nil

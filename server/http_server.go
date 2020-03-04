@@ -3,20 +3,18 @@ package server
 import (
 	"net/http"
 	"petpujaris/config"
+	"petpujaris/logger"
 	"petpujaris/repository"
+	"petpujaris/restaurant"
 	"petpujaris/user"
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/urfave/negroni"
+	"github.com/sirupsen/logrus"
 )
 
 type HTTP struct {
 	Port int
-}
-
-type Server interface {
-	Start() error
 }
 
 func (hs HTTP) getPort() string {
@@ -34,14 +32,15 @@ func (hs HTTP) Start() error {
 	userService := user.NewUserService(dbRepository)
 	FindUserByIDHandler := user.FindByID(userService)
 
+	restaurantCSVHandler := restaurant.RestaurantCSVHandler()
+
 	router := mux.NewRouter()
-	joshRouter := router.PathPrefix("/josh/petpujarires").Subrouter()
+	restaurantRouter := router.PathPrefix("/petpujaris/restaurant").Subrouter()
+	restaurantRouter.HandleFunc("/csv/upload", restaurantCSVHandler).Methods(http.MethodPost)
 
-	joshRouter.HandleFunc("/user/{userID}", FindUserByIDHandler).Methods(http.MethodGet)
+	userRouter := router.PathPrefix("/petpujarires").Subrouter()
+	userRouter.HandleFunc("/user/{userID}", FindUserByIDHandler).Methods(http.MethodGet)
 
-	server := negroni.Classic()
-	server.UseHandler(router)
-
-	server.Run(hs.getPort())
-	return nil
+	logger.LogInfo(logrus.Fields{"Port": hs.Port}, "Server started")
+	return http.ListenAndServe(hs.getPort(), router)
 }
