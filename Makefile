@@ -6,8 +6,9 @@ copy-config:
 	cp application.yaml.sample application-test.yaml
 
 service-run: 
-	ENVIRONMENT=development go run main.go
+	ENVIRONMENT=development go build
+	ENVIRONMENT=development ./petpujaris
 
 test:
-	ENVIRONMENT=test go test -v ./...  
+	ENVIRONMENT=test go test -cover ./...  
 
