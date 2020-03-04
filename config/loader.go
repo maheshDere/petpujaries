@@ -68,3 +68,7 @@ func GetAppConfig() AppConfig {
 func GetDBConfig() DatabaseConfig {
 	return dbConfig
 }
+
+func ServerPort() int {
+	return appConfig.ServerPort
+}
