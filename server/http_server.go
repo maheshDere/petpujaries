@@ -31,8 +31,8 @@ func (hs HTTP) Start() error {
 	dbRepository := repository.NewDBRegistry(pgClient)
 	userService := user.NewUserService(dbRepository)
 	FindUserByIDHandler := user.FindByID(userService)
-
-	restaurantCSVHandler := restaurant.RestaurantCSVHandler()
+	restaurantService := restaurant.NewRestaurantService()
+	restaurantCSVHandler := restaurant.RestaurantCSVHandler(restaurantService)
 
 	router := mux.NewRouter()
 	restaurantRouter := router.PathPrefix("/petpujaris/restaurant").Subrouter()

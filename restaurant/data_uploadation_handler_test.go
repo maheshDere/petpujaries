@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 const dataUplodationURL = "/petpujaris/restaurant/csv/upload"
@@ -27,12 +28,15 @@ func TestRestaurantCSVHandler(t *testing.T) {
 
 		req := httptest.NewRequest("POST", dataUplodationURL, &b)
 		responseRecorder := httptest.NewRecorder()
-		handler := setupRestaurantCSVHandler()
+		mockrestaurantService, handler := setupRestaurantCSVHandler()
+		mockrestaurantService.On("SaveBulkRestaurantData", mock.Anything).Return(nil)
+
 		handler(responseRecorder, req)
 		t.Run("it should return StatusBadRequest ", func(t *testing.T) {
 			actualResponse := responseRecorder.Body.String()
 			assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
 			assert.Empty(t, actualResponse)
+			mockrestaurantService.AssertNotCalled(t, "SaveBulkRestaurantData")
 		})
 	})
 
@@ -41,17 +45,21 @@ func TestRestaurantCSVHandler(t *testing.T) {
 		req := httptest.NewRequest("POST", dataUplodationURL, &b)
 		req.Header.Set("Content-Type", w.FormDataContentType())
 		responseRecorder := httptest.NewRecorder()
-		handler := setupRestaurantCSVHandler()
+		mockrestaurantService, handler := setupRestaurantCSVHandler()
+		mockrestaurantService.On("SaveBulkRestaurantData", mock.Anything).Return(nil)
+
 		handler(responseRecorder, req)
 		t.Run("it should return statusOK", func(t *testing.T) {
 			actualResponse := responseRecorder.Body.String()
 			assert.Equal(t, http.StatusOK, responseRecorder.Code)
 			assert.Empty(t, actualResponse)
+			mockrestaurantService.AssertExpectations(t)
 		})
 	})
 }
-func setupRestaurantCSVHandler() http.HandlerFunc {
-	return RestaurantCSVHandler()
+func setupRestaurantCSVHandler() (*MockRestaurantService, http.HandlerFunc) {
+	mockrestaurantService := new(MockRestaurantService)
+	return mockrestaurantService, RestaurantCSVHandler(mockrestaurantService)
 }
 
 func generateCSVData(t *testing.T) (bytes.Buffer, *multipart.Writer) {
