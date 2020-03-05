@@ -38,7 +38,7 @@ func (hs HTTP) Start() error {
 	restaurantRouter := router.PathPrefix("/petpujaris/restaurant").Subrouter()
 	restaurantRouter.HandleFunc("/csv/upload", restaurantCSVHandler).Methods(http.MethodPost)
 
-	userRouter := router.PathPrefix("/petpujarires").Subrouter()
+	userRouter := router.PathPrefix("/petpujaris").Subrouter()
 	userRouter.HandleFunc("/user/{userID}", FindUserByIDHandler).Methods(http.MethodGet)
 
 	logger.LogInfo(logrus.Fields{"Port": hs.Port}, "Server started")
