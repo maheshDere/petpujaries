@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"petpujaris/config"
+	"petpujaris/filemanager"
 	"petpujaris/logger"
 	"petpujaris/repository"
 	"petpujaris/restaurant"
@@ -32,7 +33,10 @@ func (hs HTTP) Start() error {
 	userService := user.NewUserService(dbRepository)
 	FindUserByIDHandler := user.FindByID(userService)
 	restaurantService := restaurant.NewRestaurantService()
-	restaurantCSVHandler := restaurant.RestaurantCSVHandler(restaurantService)
+	fileOperation := filemanager.NewXLSXFileService()
+	//fileOperation := filemanager.NewCSVFileService(true, ',', -1)
+
+	restaurantCSVHandler := restaurant.RestaurantCSVHandler(restaurantService, fileOperation)
 
 	router := mux.NewRouter()
 	restaurantRouter := router.PathPrefix("/petpujaris/restaurant").Subrouter()
