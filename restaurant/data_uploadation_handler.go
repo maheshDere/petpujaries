@@ -10,7 +10,7 @@ import (
 	"petpujaris/logger"
 )
 
-func RestaurantCSVHandler() http.HandlerFunc {
+func RestaurantCSVHandler(restaurantService RestaurantService) http.HandlerFunc {
 	restaurantCSVHandler := func(rw http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		csvData, err := parseCSVFile(r)
@@ -21,6 +21,7 @@ func RestaurantCSVHandler() http.HandlerFunc {
 		}
 
 		fmt.Println(csvData)
+		restaurantService.SaveBulkRestaurantData(csvData)
 		rw.WriteHeader(http.StatusOK)
 
 	}

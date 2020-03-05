@@ -10,5 +10,5 @@ service-run:
 	ENVIRONMENT=development ./petpujaris
 
 test:
-	ENVIRONMENT=test go test -cover ./...  
+	ENVIRONMENT=test go test -v -cover ./...  
 
