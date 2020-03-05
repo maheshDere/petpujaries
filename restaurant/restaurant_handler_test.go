@@ -2,6 +2,7 @@ package restaurant
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -28,7 +29,8 @@ func TestRestaurantCSVHandler(t *testing.T) {
 
 		req := httptest.NewRequest("POST", dataUplodationURL, &b)
 		responseRecorder := httptest.NewRecorder()
-		mockrestaurantService, handler := setupRestaurantCSVHandler()
+		mockrestaurantService, mockFileOperation, handler := setupRestaurantCSVHandler()
+		mockFileOperation.On("Reader", mock.Anything).Return([][]string{{"mockrecord"}}, nil)
 		mockrestaurantService.On("SaveBulkRestaurantData", mock.Anything).Return(nil)
 
 		handler(responseRecorder, req)
@@ -41,25 +43,47 @@ func TestRestaurantCSVHandler(t *testing.T) {
 	})
 
 	t.Run("When users pass csv file", func(t *testing.T) {
-		b, w := generateCSVData(t)
-		req := httptest.NewRequest("POST", dataUplodationURL, &b)
-		req.Header.Set("Content-Type", w.FormDataContentType())
-		responseRecorder := httptest.NewRecorder()
-		mockrestaurantService, handler := setupRestaurantCSVHandler()
-		mockrestaurantService.On("SaveBulkRestaurantData", mock.Anything).Return(nil)
+		t.Run("when file reader operation return an error", func(t *testing.T) {
+			b, w := generateCSVData(t)
+			req := httptest.NewRequest("POST", dataUplodationURL, &b)
+			req.Header.Set("Content-Type", w.FormDataContentType())
+			responseRecorder := httptest.NewRecorder()
+			_, mockFileOperation, handler := setupRestaurantCSVHandler()
+			expectedError := errors.New("expected error")
+			mockFileOperation.On("Reader", mock.Anything).Return(nil, expectedError)
 
-		handler(responseRecorder, req)
-		t.Run("it should return statusOK", func(t *testing.T) {
-			actualResponse := responseRecorder.Body.String()
-			assert.Equal(t, http.StatusOK, responseRecorder.Code)
-			assert.Empty(t, actualResponse)
-			mockrestaurantService.AssertExpectations(t)
+			handler(responseRecorder, req)
+			t.Run("it should return StatusBadRequest", func(t *testing.T) {
+				actualResponse := responseRecorder.Body.String()
+				assert.Equal(t, http.StatusBadRequest, responseRecorder.Code)
+				assert.Empty(t, actualResponse)
+				mockFileOperation.AssertExpectations(t)
+			})
+		})
+		t.Run("when file reader operation return the result", func(t *testing.T) {
+			b, w := generateCSVData(t)
+			req := httptest.NewRequest("POST", dataUplodationURL, &b)
+			req.Header.Set("Content-Type", w.FormDataContentType())
+			responseRecorder := httptest.NewRecorder()
+			mockrestaurantService, mockFileOperation, handler := setupRestaurantCSVHandler()
+			mockFileOperation.On("Reader", mock.Anything).Return([][]string{{"mockrecord"}}, nil)
+			mockrestaurantService.On("SaveBulkRestaurantData", mock.Anything).Return(nil)
+
+			handler(responseRecorder, req)
+			t.Run("it should return statusOK", func(t *testing.T) {
+				actualResponse := responseRecorder.Body.String()
+				assert.Equal(t, http.StatusOK, responseRecorder.Code)
+				assert.Empty(t, actualResponse)
+				mockrestaurantService.AssertExpectations(t)
+				mockFileOperation.AssertExpectations(t)
+			})
 		})
 	})
 }
-func setupRestaurantCSVHandler() (*MockRestaurantService, http.HandlerFunc) {
+func setupRestaurantCSVHandler() (*MockRestaurantService, *MockXLSXFileService, http.HandlerFunc) {
 	mockrestaurantService := new(MockRestaurantService)
-	return mockrestaurantService, RestaurantCSVHandler(mockrestaurantService)
+	mockFileOperation := new(MockXLSXFileService)
+	return mockrestaurantService, mockFileOperation, RestaurantCSVHandler(mockrestaurantService, mockFileOperation)
 }
 
 func generateCSVData(t *testing.T) (bytes.Buffer, *multipart.Writer) {

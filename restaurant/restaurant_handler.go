@@ -1,21 +1,25 @@
 package restaurant
 
 import (
-	"bytes"
-	"encoding/csv"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
+	"petpujaris/filemanager"
 	"petpujaris/logger"
 )
 
-func RestaurantCSVHandler(restaurantService RestaurantService) http.HandlerFunc {
+func RestaurantCSVHandler(restaurantService RestaurantService, fileOperation filemanager.FileOperation) http.HandlerFunc {
 	restaurantCSVHandler := func(rw http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		csvData, err := parseCSVFile(r)
+		file, _, err := r.FormFile("csvfile")
 		if err != nil {
-			logger.LogError(err, "RestaurantCSVHandler", "CSV file can not parse")
+			logger.LogError(err, "RestaurantCSVHandler", "invalid parameter")
+			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		csvData, err := fileOperation.Reader(file)
+		if err != nil {
+			logger.LogError(err, "RestaurantCSVHandler", "file can not read")
 			rw.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -26,32 +30,4 @@ func RestaurantCSVHandler(restaurantService RestaurantService) http.HandlerFunc 
 
 	}
 	return http.HandlerFunc(restaurantCSVHandler)
-}
-
-func parseCSVFile(req *http.Request) ([][]string, error) {
-	file, _, err := req.FormFile("csvfile")
-	if err != nil {
-		return nil, err
-	}
-	byteData, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-
-	reader := csv.NewReader(bytes.NewReader(byteData))
-	reader.LazyQuotes = true
-	reader.Comma = ','
-	reader.FieldsPerRecord = -1
-	var results [][]string
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-		results = append(results, record)
-	}
-	return results, nil
 }
