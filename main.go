@@ -21,7 +21,16 @@ func startServer() error {
 	logger.Setup()
 	defer logger.Close()
 
+	/* //For HTTP Server
+
 	server := server.HTTP{Port: config.ServerPort()}
+	err := server.Start()
+	if err != nil {
+		logger.LogError(err, "main.server.Start", "error in start server")
+		return err
+	} */
+
+	server := server.GRPC{Port: config.ServerPort()}
 	err := server.Start()
 	if err != nil {
 		logger.LogError(err, "main.server.Start", "error in start server")
