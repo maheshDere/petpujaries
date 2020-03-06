@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"petpujaris/filemanager"
 	"petpujaris/logger"
 	"petpujaris/uploader"
 	"strconv"
@@ -22,10 +23,11 @@ func (gc GRPC) getGRPCPort() string {
 
 func (gc GRPC) Start() error {
 
-	/* restaurantService := restaurant.NewRestaurantService()
-	fileOperation := filemanager.NewXLSXFileService() */
-	//fileOperation := filemanager.NewCSVFileService(true, ',', -1)
-	uploaderHandler := uploader.NewUploaderHandler()
+	uploaderService := uploader.NewUploaderService()
+	fileService := filemanager.NewXLSXFileService()
+	//fileService := filemanager.NewCSVFileService(true, ',', -1)
+
+	uploaderHandler := uploader.NewUploaderHandler(uploaderService, fileService)
 	Server := grpc.NewServer()
 	uploader.RegisterUploadServiceServer(Server, uploaderHandler)
 

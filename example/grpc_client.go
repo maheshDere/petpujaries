@@ -20,7 +20,7 @@ func main() {
 
 	client := uploader.NewUploadServiceClient(conn)
 	gc := NewGRPCClient(client)
-	err = gc.UploadFile(context.Background(), "AusVSIndMatch.csv")
+	err = gc.UploadFile(context.Background(), "Restaurant Meal Upload.xlsx") //example file: AusVSIndMatch.csv //Restaurant Meal Upload.xlsx
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -41,13 +41,13 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
 
 	file, err := os.Open(f)
 	if err != nil {
-		return fmt.Errorf("File not open", err)
+		return fmt.Errorf("File not open %v", err)
 	}
 	defer file.Close()
 
 	stream, err := gc.Client.UploadFile(ctx)
 	if err != nil {
-		return fmt.Errorf("Could not create client connection", err)
+		return fmt.Errorf("Could not create client connection %v", err)
 	}
 
 	err = stream.Send(&uploader.UploadFileRequest{
@@ -55,7 +55,7 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("data could not send to server", err)
+		return fmt.Errorf("data could not send to server %v", err)
 	}
 
 	reader := bufio.NewReader(file)
@@ -68,7 +68,7 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("file could not read", err)
+			return fmt.Errorf("file could not read %v", err)
 		}
 
 		err = stream.Send(&uploader.UploadFileRequest{
@@ -78,13 +78,13 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
 		})
 
 		if err != nil {
-			return fmt.Errorf("file could not send", err)
+			return fmt.Errorf("file could not send %v", err)
 		}
 	}
 
 	res, err := stream.CloseAndRecv()
 	if err != nil {
-		return fmt.Errorf("could not receive the response", err)
+		return fmt.Errorf("could not receive the response %v", err)
 	}
 
 	fmt.Println("File uploaded successfully", res.GetStatus(), res.GetMessage(), res.GetSize())

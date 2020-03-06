@@ -4,25 +4,27 @@ import (
 	"bytes"
 	fmt "fmt"
 	"io"
+	"petpujaris/filemanager"
 
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 )
 
 type UploaderHandler struct {
+	Service     UploaderService
+	FileService filemanager.FileOperation
 }
 
-func NewUploaderHandler() *UploaderHandler {
-	return &UploaderHandler{}
+func NewUploaderHandler(service UploaderService, fileService filemanager.FileOperation) *UploaderHandler {
+	return &UploaderHandler{Service: service, FileService: fileService}
 
 }
 
 const maxFileSize = 1 << 20
 
-func (s *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) error {
+func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) error {
 	req, err := stream.Recv()
 	if err != nil {
-		fmt.Println("stream recv error", err)
 		return status.Errorf(codes.Unknown, "can not recevice file")
 	}
 
@@ -32,14 +34,11 @@ func (s *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) erro
 	fileSize := 0
 
 	for {
-		fmt.Println("waititng for chunk data")
 		req, err := stream.Recv()
 		if err == io.EOF {
-			fmt.Println("no more data send")
 			break
 		}
 		if err != nil {
-			fmt.Println("stream recv error", err)
 			return status.Errorf(codes.Unknown, "can not recevice file")
 		}
 
@@ -53,13 +52,10 @@ func (s *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) erro
 
 		_, err = fileData.Write(chunk)
 		if err != nil {
-			fmt.Println("Buffer error", err)
 			return status.Errorf(codes.Unknown, "can not recevice file")
 		}
 	}
 
-	fmt.Println("File successfully get")
-	fmt.Println(fileData.String())
 	err = stream.SendAndClose(&UploadFileResponse{
 		Message: "Upload received with success",
 		Status:  200,
@@ -67,8 +63,10 @@ func (s *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) erro
 	})
 
 	if err != nil {
-		fmt.Println("Not send success response", err)
 		return status.Errorf(codes.Unknown, "response not send")
 	}
+
+	result, err := uh.FileService.Reader(&fileData)
+	fmt.Println("Reader result", result)
 	return nil
 }
