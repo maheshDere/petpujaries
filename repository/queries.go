@@ -2,7 +2,7 @@ package repository
 
 import "fmt"
 
-var FindUserByID Command
+var FindUserByID, SaveMealsQuery Command
 
 type Command struct {
 	Query       string
@@ -24,5 +24,12 @@ func init() {
 		Table:       "users",
 		Description: "fetch user by id",
 		Query:       `select id,country_code,mobile_no from %[1]s where id = $1`,
+	}
+
+	SaveMealsQuery = Command{
+		Table:       "meals",
+		Description: "INSERT MEALS DETAILS",
+		Query: "insert into %s (name, description, image_url, price, calories, is_active, restaurant_cuisine_id, meal_type_id, created_at)" +
+			" values ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
 	}
 }
