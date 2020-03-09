@@ -9,6 +9,6 @@ service-run:
 	ENVIRONMENT=development go build
 	ENVIRONMENT=development ./petpujaris
 
-test:
+test-run:
 	ENVIRONMENT=test go test -v -cover ./...  
 
