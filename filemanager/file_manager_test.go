@@ -29,7 +29,7 @@ func TestXLSXFile_Reader(t *testing.T) {
 	})
 	t.Run("when pass invalid sheet", func(t *testing.T) {
 		xlsxFile := XLSXFile{}
-		file, err := os.Open("BadWorkbook.xlsx")
+		file, err := os.Open("../test/BadWorkbook.xlsx")
 		assert.NoError(t, err)
 		defer file.Close()
 		result, err := xlsxFile.Reader(file)
@@ -41,7 +41,7 @@ func TestXLSXFile_Reader(t *testing.T) {
 	})
 	t.Run("when pass valid data sheet", func(t *testing.T) {
 		xlsxFile := XLSXFile{}
-		file, err := os.Open("Book1.xlsx")
+		file, err := os.Open("../test/Book.xlsx")
 		assert.NoError(t, err)
 		defer file.Close()
 		result, err := xlsxFile.Reader(file)
