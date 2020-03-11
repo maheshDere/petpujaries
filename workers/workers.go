@@ -30,13 +30,14 @@ func (p Pool) Run(ctx context.Context) {
 	tasks := make(chan []string, p.TotalRecord)
 	errorlog := make(chan errorLog, p.TotalRecord)
 	var wg sync.WaitGroup
+
 	for w := 1; w <= p.Workers; w++ {
 		go p.mealWorker(ctx, w, &wg, tasks, errorlog)
 	}
 
 	for t := 1; t < p.TotalRecord; t++ {
 		wg.Add(1)
-		tasks <- p.Records[t]
+		tasks <- data[t]
 	}
 
 	close(tasks)

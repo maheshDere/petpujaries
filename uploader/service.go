@@ -10,7 +10,7 @@ type uploaderService struct {
 	MealRegistry repository.MealRegistry
 }
 
-func (rs uploaderService) SaveBulkdata(ctx context.Context, data [][]string) error {
+func (rs uploaderService) SaveBulkdata(ctx context.Context, module string, data [][]string) error {
 	p := workers.NewPool(10, len(data), data, rs.MealRegistry)
 	p.Run(ctx)
 	return nil
