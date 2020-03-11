@@ -16,13 +16,8 @@ type PgClient struct {
 }
 
 type Client interface {
-	QueryRowxContext(ctx context.Context, cmd Command, args ...interface{}) *sqlx.Row
 	Query(ctx context.Context, cmd Command, args ...interface{}) (*sql.Rows, error)
 	Exec(ctx context.Context, cmd Command, args ...interface{}) (sql.Result, error)
-}
-
-func (pgClient PgClient) QueryRowxContext(ctx context.Context, cmd Command, args ...interface{}) *sqlx.Row {
-	return pgClient.db.QueryRowxContext(ctx, cmd.GetQuery(), args...)
 }
 
 func (pgClient PgClient) Query(ctx context.Context, cmd Command, args ...interface{}) (*sql.Rows, error) {
