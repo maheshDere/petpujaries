@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"petpujaris/config"
 
 	"petpujaris/logger"
 
 	"github.com/jmoiron/sqlx"
+	//required
 	_ "github.com/lib/pq"
 )
 
@@ -16,10 +18,20 @@ type PgClient struct {
 
 type Client interface {
 	QueryRowxContext(ctx context.Context, cmd Command, args ...interface{}) *sqlx.Row
+	Query(ctx context.Context, cmd Command, args ...interface{}) (*sql.Rows, error)
+	Exec(ctx context.Context, cmd Command, args ...interface{}) (sql.Result, error)
 }
 
 func (pgClient PgClient) QueryRowxContext(ctx context.Context, cmd Command, args ...interface{}) *sqlx.Row {
 	return pgClient.db.QueryRowxContext(ctx, cmd.GetQuery(), args...)
+}
+
+func (pgClient PgClient) Query(ctx context.Context, cmd Command, args ...interface{}) (*sql.Rows, error) {
+	return pgClient.db.Query(cmd.GetQuery(), args...)
+}
+
+func (pgClient PgClient) Exec(ctx context.Context, cmd Command, args ...interface{}) (sql.Result, error) {
+	return pgClient.db.Exec(cmd.GetQuery(), args...)
 }
 
 func NewPgClient(dbcfg config.DatabaseConfig) (PgClient, error) {
