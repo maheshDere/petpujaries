@@ -4,6 +4,7 @@ import "time"
 
 type Meals struct {
 	ID                  int8      `json:"id" db:"id"`
+	Name                string    `json:"name" db:"name"`
 	Description         string    `json:"description" db:"description"`
 	ImageURL            string    `json:"image_url" db:"image_url"`
 	Price               float32   `json:"price" db:"price"`

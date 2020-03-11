@@ -19,7 +19,6 @@ func (cmd Command) GetRawQuery() string {
 }
 
 func init() {
-
 	FindUserByID = Command{
 		Table:       "users",
 		Description: "fetch user by id",
@@ -29,7 +28,7 @@ func init() {
 	SaveMealsQuery = Command{
 		Table:       "meals",
 		Description: "INSERT MEALS DETAILS",
-		Query: "insert into %s (name, description, image_url, price, calories, is_active, restaurant_cuisine_id, meal_type_id, created_at)" +
-			" values ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+		Query: "insert into %s (name, description, image_url, price, calories, is_active, restaurant_cuisine_id, meal_type_id, created_at,updated_at)" +
+			" values ($1, $2, $3, $4, $5, $6, $7, $8, $9,$10) RETURNING id",
 	}
 }
