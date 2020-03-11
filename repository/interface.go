@@ -6,7 +6,6 @@ import (
 )
 
 type DatabaseRegistry interface {
-	FindUserByID(ctx context.Context, userID string) (models.User, error)
 	CreateUser(ctx context.Context, user models.User) (err error)
 }
 
