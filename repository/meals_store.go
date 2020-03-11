@@ -51,6 +51,11 @@ func (mr mealsRegistry) SaveIngredients(ctx context.Context, ingredients models.
 	return id, err
 }
 
+func (mr mealsRegistry) SaveMealIngredients(ctx context.Context, mealIngredients models.MealsIngredients) error {
+	_, err := mr.client.Exec(ctx, SaveMealIngredientsQuery, mealIngredients.MealsID, mealIngredients.IngredientID, mealIngredients.CreatedAt, mealIngredients.UpdatedAt)
+	return err
+}
+
 func NewMealsRegistry(pg Client) MealRegistry {
 	return mealsRegistry{client: pg}
 }

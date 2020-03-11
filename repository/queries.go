@@ -2,7 +2,7 @@ package repository
 
 import "fmt"
 
-var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery Command
+var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery Command
 
 type Command struct {
 	Query       string
@@ -46,5 +46,12 @@ func init() {
 		Query: "insert into %s (name, created_at,updated_at)" +
 			" values ($1, $2, $3) RETURNING id",
 		//ON CONFLICT (name) DO NOTHING  (Need to add indexing on ingredients table create unique INDEX index_name on items (name);)
+	}
+
+	SaveMealIngredientsQuery = Command{
+		Table:       "meal_ingredients",
+		Description: "INSERT MEAL INGREDIENTS DETAILS",
+		Query: "insert into %s (meal_id,ingredient_id,created_at,updated_at)" +
+			" values ($1, $2, $3, $4)",
 	}
 }

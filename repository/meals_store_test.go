@@ -42,7 +42,7 @@ func TestMealsRegistry_Save(t *testing.T) {
 			UpdatedAt:           time.Now(),
 		}
 		id, err := mealRegistry.Save(context.Background(), mealRecord)
-		t.Run("it should return an error", func(t *testing.T) {
+		t.Run("it should not return an error", func(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotEqual(t, int64(0), id)
 		})
@@ -59,7 +59,7 @@ func TestMealsRegistry_SaveItem(t *testing.T) {
 		}
 
 		err := mealRegistry.SaveItem(context.Background(), mealItemRecord)
-		t.Run("it should return an error", func(t *testing.T) {
+		t.Run("it should not return an error", func(t *testing.T) {
 			assert.NoError(t, err)
 		})
 	})
@@ -74,9 +74,25 @@ func TestMealsRegistry_SaveIngredients(t *testing.T) {
 		}
 
 		id, err := mealRegistry.SaveIngredients(context.Background(), IngredientRecord)
-		t.Run("it should return an error", func(t *testing.T) {
+		t.Run("it should not return an error", func(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotEqual(t, int64(0), id)
+		})
+	})
+}
+
+func TestMealsRegistry_SaveMealsIngredients(t *testing.T) {
+	t.Run("when insert valid meals ingredients relation", func(t *testing.T) {
+		mealIngredientsRecord := models.MealsIngredients{
+			MealsID:      10,
+			IngredientID: 12,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
+		}
+
+		err := mealRegistry.SaveMealIngredients(context.Background(), mealIngredientsRecord)
+		t.Run("it should not return an error", func(t *testing.T) {
+			assert.NoError(t, err)
 		})
 	})
 }
