@@ -8,14 +8,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/jmoiron/sqlx"
+	"github.com/stretchr/testify/assert"
 )
 
 var ctx context.Context
 var db *sqlx.DB
-var dbRegistry DatabaseRegistry
+var ur UserRegistry
 var pgClient PgClient
 
 func init() {
@@ -35,7 +34,7 @@ func init() {
 		panic(err)
 	}
 
-	dbRegistry = NewDBRegistry(pgClient)
+	ur = NewUserRegistry(pgClient)
 }
 
 func TestCreateUser(t *testing.T) {
@@ -54,7 +53,7 @@ func TestCreateUser(t *testing.T) {
 			UpdatedAt:        time,
 		}
 		t.Run("It shoud return error equal to nil", func(t *testing.T) {
-			err := dbRegistry.CreateUser(ctx, user)
+			err := ur.Save(ctx, user)
 			assert.NoError(t, err)
 		})
 	})

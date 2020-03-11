@@ -5,8 +5,8 @@ import (
 	"petpujaris/models"
 )
 
-type DatabaseRegistry interface {
-	CreateUser(ctx context.Context, user models.User) (err error)
+type UserRegistry interface {
+	Save(ctx context.Context, user models.User) (err error)
 }
 
 type MealRegistry interface {

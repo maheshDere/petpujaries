@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"petpujaris/config"
-
 	"petpujaris/logger"
 
 	"github.com/jmoiron/sqlx"
