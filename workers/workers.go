@@ -19,6 +19,7 @@ type Pool struct {
 
 type errorLog struct {
 	Records []string
+	MealID  int64
 }
 
 func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository repository.UserRegistry) Pool {
@@ -53,6 +54,10 @@ func (p Pool) Run(ctx context.Context, module string, data [][]string) {
 		errs := <-errorlog
 		if len(errs.Records) != 0 {
 			errorRecords = append(errorRecords, errs.Records)
+			if errs.MealID != 0 {
+				p.MealRegistry.Delete(ctx, errs.MealID)
+				fmt.Println("record deleted ", errs.MealID)
+			}
 		}
 	}
 
@@ -88,7 +93,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 		if len(errData) != 0 {
 			errorRecord = append(errorRecord, t...)
 			errorRecord = append(errorRecord, errData...)
-			errorlog <- errorLog{Records: errorRecord}
+			errorlog <- errorLog{Records: errorRecord, MealID: id}
 			continue
 		}
 
@@ -97,7 +102,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 		if len(errData) != 0 {
 			errorRecord = append(errorRecord, t...)
 			errorRecord = append(errorRecord, errData...)
-			errorlog <- errorLog{Records: errorRecord}
+			errorlog <- errorLog{Records: errorRecord, MealID: id}
 			continue
 		}
 
