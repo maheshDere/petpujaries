@@ -12,10 +12,11 @@ import (
 )
 
 type Pool struct {
-	Workers      int
-	TotalRecord  int
-	Records      [][]string
-	MealRegistry repository.MealRegistry
+	Workers        int
+	TotalRecord    int
+	Records        [][]string
+	MealRegistry   repository.MealRegistry
+	UserRepository repository.UserRepository
 }
 
 type errorLog struct {
@@ -255,4 +256,55 @@ func parseMealRecord(t []string) (models.Meals, []string) {
 		UpdatedAt:           time.Now(),
 	}
 	return mealReord, errs
+}
+
+func (p Pool) UserWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks <-chan []string, errorlogs chan<- []error) {
+	for task := range tasks {
+		user, errCollection := parseUser(task)
+		if len(errCollection) != 0 {
+			errorlogs <- errCollection
+		}
+
+		err := p.UserRepository.Save(ctx, user)
+		errCollection = append(errCollection, err)
+	}
+}
+
+func parseUser(task []string) (user models.User, errCollection []error) {
+	var err error
+	errCollection = make([]error, 0)
+	user.Name = task[0]
+	user.Email = task[1]
+	user.MobileNumber = task[2]
+	user.IsActive, err = strconv.ParseBool(task[3])
+	if err != nil {
+		errCollection = append(errCollection, err)
+	}
+
+	roleID, err := strconv.ParseFloat(task[5], 64)
+	if err != nil {
+		errCollection = append(errCollection, err)
+	}
+	user.RoleID = int(roleID)
+
+	resourceableID, err := strconv.ParseFloat(task[6], 64)
+	if err != nil {
+		errCollection = append(errCollection, err)
+	}
+	user.ResourceableID = int(resourceableID)
+
+	user.ResourceableType = task[7]
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+
+	if len(errCollection) != 0 {
+		return user, errCollection
+	}
+
+	user.Password, err = user.GenerateHashedPassword()
+	if err != nil {
+		errCollection = append(errCollection, err)
+	}
+
+	return
 }

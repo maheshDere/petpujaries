@@ -2,6 +2,7 @@ package uploader
 
 import (
 	"bytes"
+	context "context"
 	fmt "fmt"
 	"io"
 	"petpujaris/filemanager"
@@ -17,19 +18,18 @@ type UploaderHandler struct {
 
 func NewUploaderHandler(service UploaderService, fileService filemanager.FileOperation) *UploaderHandler {
 	return &UploaderHandler{Service: service, FileService: fileService}
-
 }
 
 const maxFileSize = 1 << 20
 
 func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) error {
+	ctx := context.TODO()
 	req, err := stream.Recv()
 	if err != nil {
 		return status.Errorf(codes.Unknown, "can not recevice file")
 	}
 
 	moduleName := req.GetInfo().GetModulename()
-	fmt.Println("moduleName: ", moduleName)
 	fileData := bytes.Buffer{}
 	fileSize := 0
 

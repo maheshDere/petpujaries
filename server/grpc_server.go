@@ -32,8 +32,10 @@ func (gc GRPC) Start() error {
 
 	mealRegistry := repository.NewMealsRegistry(pgClient)
 	uploaderService := uploader.NewUploaderService(mealRegistry)
-	//fileService := filemanager.NewXLSXFileService()
-	fileService := filemanager.NewCSVFileService(true, ',', -1)
+	fileService := filemanager.NewXLSXFileService()
+	//fileService := filemanager.NewCSVFileService(true, ',', -1)
+	ur := repository.NewUserRegistry(pgClient)
+	uploaderService := uploader.NewUploaderService(ur)
 
 	uploaderHandler := uploader.NewUploaderHandler(uploaderService, fileService)
 	Server := grpc.NewServer()
