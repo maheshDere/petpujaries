@@ -56,6 +56,12 @@ func (mr mealsRegistry) SaveMealIngredients(ctx context.Context, mealIngredients
 	return err
 }
 
+func (mr mealsRegistry) Delete(ctx context.Context, MealID int64) {
+	mr.client.Exec(ctx, DeleteMealIngredientsQuery, MealID)
+	mr.client.Exec(ctx, DeleteMealsItemQuery, MealID)
+	mr.client.Exec(ctx, DeleteMealsQuery, MealID)
+
+}
 func NewMealsRegistry(pg Client) MealRegistry {
 	return mealsRegistry{client: pg}
 }
