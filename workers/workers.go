@@ -28,7 +28,7 @@ func NewPool(workers int, totalRecord int, records [][]string, mealRegistry repo
 
 func (p Pool) Run(ctx context.Context) {
 	tasks := make(chan []string, p.TotalRecord)
-	errorlog := make(chan errorLog, 1)
+	errorlog := make(chan errorLog, p.TotalRecord)
 	var wg sync.WaitGroup
 	for w := 1; w <= p.Workers; w++ {
 		go p.mealWorker(ctx, w, &wg, tasks, errorlog)
@@ -56,6 +56,7 @@ func (p Pool) Run(ctx context.Context) {
 
 func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog) {
 	for t := range tasks {
+		wg.Done()
 		var errorRecord []string
 		mealRecord, errs := parseMealRecord(t)
 		if err := mealRecord.Validation(); err != nil {
@@ -85,8 +86,17 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 			continue
 		}
 
+		ingredientSplit := strings.Split(t[7], ",")
+		errData = p.createMealIngredientSubWorker(ctx, id, ingredientSplit)
+		if len(errData) != 0 {
+			errorRecord = append(errorRecord, t...)
+			errorRecord = append(errorRecord, errData...)
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+
 		errorlog <- errorLog{Records: errorRecord}
-		wg.Done()
+
 	}
 }
 
@@ -101,19 +111,18 @@ func (p Pool) createMealSubWorker(ctx context.Context, mealId int64, itemSplit [
 	for t := 0; t < len(itemSplit); t++ {
 		wgSub.Add(1)
 		mealItemRecord := models.Items{
-			MealsID:   int8(mealId),
+			MealsID:   mealId,
 			Name:      itemSplit[t],
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}
-		fmt.Println("mealItemRecord", mealId, mealItemRecord)
 		items <- mealItemRecord
 	}
 
 	close(items)
 
 	var errorRecords []string
-	for t := 1; t < len(itemSplit); t++ {
+	for t := 0; t < len(itemSplit); t++ {
 		errs := <-errorlog
 		if errs != nil {
 			errorRecords = append(errorRecords, errs.Error())
@@ -125,10 +134,83 @@ func (p Pool) createMealSubWorker(ctx context.Context, mealId int64, itemSplit [
 
 func (p Pool) mealItemSubWorker(ctx context.Context, wgSub *sync.WaitGroup, items <-chan models.Items, errorlog chan<- error) {
 	for item := range items {
+		wgSub.Done()
+		if err := item.Validation(); err != nil {
+			errorlog <- err
+			continue
+		}
 		err := p.MealRegistry.SaveItem(ctx, item)
 		errorlog <- err
 	}
-	wgSub.Done()
+
+}
+
+func (p Pool) createMealIngredientSubWorker(ctx context.Context, mealId int64, ingredientsSplit []string) []string {
+	ingredients := make(chan models.Ingredients, len(ingredientsSplit))
+	errorlog := make(chan error, len(ingredientsSplit))
+	var wgSub sync.WaitGroup
+	for i := 0; i < len(ingredientsSplit); i++ {
+		go p.mealIngredientSubWorker(ctx, &wgSub, &mealId, ingredients, errorlog)
+	}
+
+	for t := 0; t < len(ingredientsSplit); t++ {
+		wgSub.Add(1)
+		mealIngredientsRecord := models.Ingredients{
+			Name:      ingredientsSplit[t],
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		ingredients <- mealIngredientsRecord
+	}
+
+	close(ingredients)
+
+	var errorRecords []string
+	for t := 0; t < len(ingredientsSplit); t++ {
+		errs := <-errorlog
+		if errs != nil {
+			errorRecords = append(errorRecords, errs.Error())
+		}
+	}
+	wgSub.Wait()
+	return errorRecords
+}
+
+func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup, mealId *int64, ingredients <-chan models.Ingredients, errorlog chan<- error) {
+	for ingredient := range ingredients {
+		wgSub.Done()
+		if err := ingredient.Validation(); err != nil {
+			errorlog <- err
+			continue
+		}
+
+		id, err := p.MealRegistry.SaveIngredients(ctx, ingredient)
+		if err != nil {
+			errorlog <- err
+			continue
+		}
+
+		mealsIngredients := models.MealsIngredients{
+			IngredientID: id,
+			MealsID:      *mealId,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
+		}
+
+		if err := mealsIngredients.Validation(); err != nil {
+			errorlog <- err
+			continue
+		}
+
+		err = p.MealRegistry.SaveMealIngredients(ctx, mealsIngredients)
+		if err != nil {
+			errorlog <- err
+			continue
+		}
+
+		errorlog <- err
+	}
+
 }
 
 func parseMealRecord(t []string) (models.Meals, []string) {
@@ -166,8 +248,8 @@ func parseMealRecord(t []string) (models.Meals, []string) {
 		Price:               float32(price),
 		Calories:            float32(calories),
 		ISActive:            isActive,
-		MealTypeID:          int8(mealTypeID),
-		RestaurantCuisineID: int8(restaurantCuisineID),
+		MealTypeID:          mealTypeID,
+		RestaurantCuisineID: restaurantCuisineID,
 		CreatedAt:           time.Now(),
 		UpdatedAt:           time.Now(),
 	}
