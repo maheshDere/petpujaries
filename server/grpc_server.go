@@ -9,6 +9,7 @@ import (
 	"petpujaris/logger"
 	"petpujaris/repository"
 	"petpujaris/uploader"
+	"petpujaris/workers"
 	"strconv"
 
 	"github.com/sirupsen/logrus"
@@ -23,6 +24,8 @@ func (gc GRPC) getGRPCPort() string {
 	return ":" + strconv.Itoa(gc.Port)
 }
 
+const WORKERS = 10
+
 func (gc GRPC) Start() error {
 	dbconfig := config.GetDBConfig()
 	pgClient, err := repository.NewPgClient(dbconfig)
@@ -30,17 +33,18 @@ func (gc GRPC) Start() error {
 		return err
 	}
 
-	mealRegistry := repository.NewMealsRegistry(pgClient)
-	uploaderService := uploader.NewUploaderService(mealRegistry)
-	fileService := filemanager.NewXLSXFileService()
-	//fileService := filemanager.NewCSVFileService(true, ',', -1)
-	ur := repository.NewUserRegistry(pgClient)
-	uploaderService := uploader.NewUploaderService(ur)
+	fileService := filemanager.NewCSVFileService(true, ',', -1)
+	//fileService := filemanager.NewXLSXFileService()
 
+	mealRegistry := repository.NewMealsRegistry(pgClient)
+	userRegistry := repository.NewUserRegistry(pgClient)
+	workerPool := workers.NewPool(WORKERS, mealRegistry, userRegistry)
+
+	uploaderService := uploader.NewUploaderService(workerPool)
 	uploaderHandler := uploader.NewUploaderHandler(uploaderService, fileService)
+
 	Server := grpc.NewServer()
 	uploader.RegisterUploadServiceServer(Server, uploaderHandler)
-
 	logger.LogInfo(logrus.Fields{"Port": gc.Port}, "Server started")
 
 	l, err := net.Listen("tcp", gc.getGRPCPort())

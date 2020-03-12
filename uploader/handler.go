@@ -2,8 +2,6 @@ package uploader
 
 import (
 	"bytes"
-	context "context"
-	fmt "fmt"
 	"io"
 	"petpujaris/filemanager"
 
@@ -23,7 +21,6 @@ func NewUploaderHandler(service UploaderService, fileService filemanager.FileOpe
 const maxFileSize = 1 << 20
 
 func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) error {
-	ctx := context.TODO()
 	req, err := stream.Recv()
 	if err != nil {
 		return status.Errorf(codes.Unknown, "can not recevice file")
@@ -61,20 +58,15 @@ func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) err
 		Status:  200,
 		Size:    uint32(fileSize),
 	})
-
 	if err != nil {
 		return status.Errorf(codes.Unknown, "response not send")
 	}
 
-	result, err := uh.FileService.Reader(&fileData)
-	for _, v := range result {
-		for k1, v1 := range v {
-			fmt.Printf("k:%d and v:  %s \n", k1, v1)
-		}
-		fmt.Println("**************")
+	data, err := uh.FileService.Reader(&fileData)
+	if err != nil {
+		return status.Errorf(codes.Unknown, "error in read file")
 	}
 
-	uh.Service.SaveBulkdata(stream.Context(), result)
-
+	uh.Service.SaveBulkdata(stream.Context(), moduleName, data)
 	return nil
 }

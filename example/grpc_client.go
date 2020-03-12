@@ -51,7 +51,7 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
 	}
 
 	err = stream.Send(&uploader.UploadFileRequest{
-		Data: &uploader.UploadFileRequest_Info{&uploader.FileInfo{Modulename: "employee"}},
+		Data: &uploader.UploadFileRequest_Info{&uploader.FileInfo{Modulename: "meal"}},
 	})
 
 	if err != nil {

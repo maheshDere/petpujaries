@@ -13,43 +13,43 @@ import (
 
 type Pool struct {
 	Workers        int
-	TotalRecord    int
-	Records        [][]string
 	MealRegistry   repository.MealRegistry
-	UserRepository repository.UserRepository
+	UserRepository repository.UserRegistry
 }
 
 type errorLog struct {
 	Records []string
 }
 
-func NewPool(workers int, totalRecord int, records [][]string, mealRegistry repository.MealRegistry) Pool {
-	return Pool{Workers: workers, TotalRecord: totalRecord, Records: records, MealRegistry: mealRegistry}
+func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository repository.UserRegistry) Pool {
+	return Pool{Workers: workers, MealRegistry: mealRegistry, UserRepository: userRepository}
 }
 
-func (p Pool) Run(ctx context.Context) {
-	tasks := make(chan []string, p.TotalRecord)
-	errorlog := make(chan errorLog, p.TotalRecord)
-	
+func (p Pool) Run(ctx context.Context, module string, data [][]string) {
+	tasks := make(chan []string, len(data))
+	errorlog := make(chan errorLog, len(data))
+
 	var wg sync.WaitGroup
-	switch module {
+	switch strings.ToLower(module) {
 	case "meal":
 		for w := 1; w <= p.Workers; w++ {
 			go p.mealWorker(ctx, w, &wg, tasks, errorlog)
 		}
-	
+
 	case "employee":
 		for w := 1; w <= p.Workers; w++ {
 			go p.UserWorker(ctx, &wg, tasks, errorlog)
 		}
-	
-	for t := 1; t < p.TotalRecord; t++ {
+	}
+
+	for t := 1; t < len(data); t++ {
 		wg.Add(1)
 		tasks <- data[t]
 	}
+
 	close(tasks)
 	var errorRecords [][]string
-	for t := 1; t < p.TotalRecord; t++ {
+	for t := 1; t < len(data); t++ {
 		errs := <-errorlog
 		if len(errs.Records) != 0 {
 			errorRecords = append(errorRecords, errs.Records)
@@ -57,9 +57,7 @@ func (p Pool) Run(ctx context.Context) {
 	}
 
 	fmt.Println("errorRecords ", errorRecords)
-
 	wg.Wait()
-
 }
 
 func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog) {
@@ -84,7 +82,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
-		fmt.Println(id)
+
 		itemSplit := strings.Split(t[6], ",")
 		errData := p.createMealSubWorker(ctx, id, itemSplit)
 		if len(errData) != 0 {
@@ -108,7 +106,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 	}
 }
 
-func (p Pool) createMealSubWorker(ctx context.Context, mealId int64, itemSplit []string) []string {
+func (p Pool) createMealSubWorker(ctx context.Context, mealID int64, itemSplit []string) []string {
 	items := make(chan models.Items, len(itemSplit))
 	errorlog := make(chan error, len(itemSplit))
 	var wgSub sync.WaitGroup
@@ -119,7 +117,7 @@ func (p Pool) createMealSubWorker(ctx context.Context, mealId int64, itemSplit [
 	for t := 0; t < len(itemSplit); t++ {
 		wgSub.Add(1)
 		mealItemRecord := models.Items{
-			MealsID:   mealId,
+			MealsID:   mealID,
 			Name:      itemSplit[t],
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -153,12 +151,12 @@ func (p Pool) mealItemSubWorker(ctx context.Context, wgSub *sync.WaitGroup, item
 
 }
 
-func (p Pool) createMealIngredientSubWorker(ctx context.Context, mealId int64, ingredientsSplit []string) []string {
+func (p Pool) createMealIngredientSubWorker(ctx context.Context, mealID int64, ingredientsSplit []string) []string {
 	ingredients := make(chan models.Ingredients, len(ingredientsSplit))
 	errorlog := make(chan error, len(ingredientsSplit))
 	var wgSub sync.WaitGroup
 	for i := 0; i < len(ingredientsSplit); i++ {
-		go p.mealIngredientSubWorker(ctx, &wgSub, &mealId, ingredients, errorlog)
+		go p.mealIngredientSubWorker(ctx, &wgSub, &mealID, ingredients, errorlog)
 	}
 
 	for t := 0; t < len(ingredientsSplit); t++ {
@@ -184,7 +182,7 @@ func (p Pool) createMealIngredientSubWorker(ctx context.Context, mealId int64, i
 	return errorRecords
 }
 
-func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup, mealId *int64, ingredients <-chan models.Ingredients, errorlog chan<- error) {
+func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup, mealID *int64, ingredients <-chan models.Ingredients, errorlog chan<- error) {
 	for ingredient := range ingredients {
 		wgSub.Done()
 		if err := ingredient.Validation(); err != nil {
@@ -200,7 +198,7 @@ func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup
 
 		mealsIngredients := models.MealsIngredients{
 			IngredientID: id,
-			MealsID:      *mealId,
+			MealsID:      *mealID,
 			CreatedAt:    time.Now(),
 			UpdatedAt:    time.Now(),
 		}
@@ -319,7 +317,7 @@ func parseUser(task []string) (user models.User, errs []string) {
 
 	user.Password, err = user.GenerateHashedPassword()
 	if err != nil {
-		errs = append(errs, fmt.Sprintf("fail to generate password  for value %s", task[6]))
+		errs = append(errs, fmt.Sprintf("fail to generate password for user %v", user.Name))
 	}
 
 	return
