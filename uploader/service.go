@@ -1,15 +1,21 @@
 package uploader
 
-import "petpujaris/workers"
+import (
+	"context"
+	"petpujaris/repository"
+	"petpujaris/workers"
+)
 
-type uploaderService struct{}
+type uploaderService struct {
+	MealRegistry repository.MealRegistry
+}
 
-func (rs uploaderService) SaveBulkdata(data [][]string) error {
-	p := workers.NewPool(10, len(data), data)
-	p.Run()
+func (rs uploaderService) SaveBulkdata(ctx context.Context, data [][]string) error {
+	p := workers.NewPool(10, len(data), data, rs.MealRegistry)
+	p.Run(ctx)
 	return nil
 }
 
-func NewUploaderService() UploaderService {
-	return uploaderService{}
+func NewUploaderService(mealRegistry repository.MealRegistry) UploaderService {
+	return uploaderService{MealRegistry: mealRegistry}
 }

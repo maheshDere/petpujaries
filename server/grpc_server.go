@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"petpujaris/config"
 	"petpujaris/filemanager"
 	"petpujaris/logger"
+	"petpujaris/repository"
 	"petpujaris/uploader"
 	"strconv"
 
@@ -22,10 +24,16 @@ func (gc GRPC) getGRPCPort() string {
 }
 
 func (gc GRPC) Start() error {
+	dbconfig := config.GetDBConfig()
+	pgClient, err := repository.NewPgClient(dbconfig)
+	if err != nil {
+		return err
+	}
 
-	uploaderService := uploader.NewUploaderService()
-	fileService := filemanager.NewXLSXFileService()
-	//fileService := filemanager.NewCSVFileService(true, ',', -1)
+	mealRegistry := repository.NewMealsRegistry(pgClient)
+	uploaderService := uploader.NewUploaderService(mealRegistry)
+	//fileService := filemanager.NewXLSXFileService()
+	fileService := filemanager.NewCSVFileService(true, ',', -1)
 
 	uploaderHandler := uploader.NewUploaderHandler(uploaderService, fileService)
 	Server := grpc.NewServer()

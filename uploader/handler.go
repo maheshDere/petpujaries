@@ -67,6 +67,14 @@ func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) err
 	}
 
 	result, err := uh.FileService.Reader(&fileData)
-	fmt.Println("Reader result", result)
+	for _, v := range result {
+		for k1, v1 := range v {
+			fmt.Printf("k:%d and v:  %s \n", k1, v1)
+		}
+		fmt.Println("**************")
+	}
+
+	uh.Service.SaveBulkdata(stream.Context(), result)
+
 	return nil
 }
