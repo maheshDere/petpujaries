@@ -30,17 +30,23 @@ func NewPool(workers int, totalRecord int, records [][]string, mealRegistry repo
 func (p Pool) Run(ctx context.Context) {
 	tasks := make(chan []string, p.TotalRecord)
 	errorlog := make(chan errorLog, p.TotalRecord)
+	
 	var wg sync.WaitGroup
-
-	for w := 1; w <= p.Workers; w++ {
-		go p.mealWorker(ctx, w, &wg, tasks, errorlog)
-	}
-
+	switch module {
+	case "meal":
+		for w := 1; w <= p.Workers; w++ {
+			go p.mealWorker(ctx, w, &wg, tasks, errorlog)
+		}
+	
+	case "employee":
+		for w := 1; w <= p.Workers; w++ {
+			go p.UserWorker(ctx, &wg, tasks, errorlog)
+		}
+	
 	for t := 1; t < p.TotalRecord; t++ {
 		wg.Add(1)
 		tasks <- data[t]
 	}
-
 	close(tasks)
 	var errorRecords [][]string
 	for t := 1; t < p.TotalRecord; t++ {
@@ -258,38 +264,48 @@ func parseMealRecord(t []string) (models.Meals, []string) {
 	return mealReord, errs
 }
 
-func (p Pool) UserWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks <-chan []string, errorlogs chan<- []error) {
+func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog) {
+	var errorRecord []string
 	for task := range tasks {
-		user, errCollection := parseUser(task)
-		if len(errCollection) != 0 {
-			errorlogs <- errCollection
+		wg.Done()
+		user, errs := parseUser(task)
+		if len(errs) != 0 {
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, errs...)
+			errorlog <- errorLog{Records: errorRecord}
+			continue
 		}
 
 		err := p.UserRepository.Save(ctx, user)
-		errCollection = append(errCollection, err)
+		if err != nil {
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, err.Error())
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+		errorlog <- errorLog{}
 	}
 }
 
-func parseUser(task []string) (user models.User, errCollection []error) {
+func parseUser(task []string) (user models.User, errs []string) {
 	var err error
-	errCollection = make([]error, 0)
 	user.Name = task[0]
 	user.Email = task[1]
 	user.MobileNumber = task[2]
 	user.IsActive, err = strconv.ParseBool(task[3])
 	if err != nil {
-		errCollection = append(errCollection, err)
+		errs = append(errs, fmt.Sprintf("can not parse IsActive  value %s", task[3]))
 	}
 
 	roleID, err := strconv.ParseFloat(task[5], 64)
 	if err != nil {
-		errCollection = append(errCollection, err)
+		errs = append(errs, fmt.Sprintf("can not parse role ID  value %s", task[5]))
 	}
 	user.RoleID = int(roleID)
 
 	resourceableID, err := strconv.ParseFloat(task[6], 64)
 	if err != nil {
-		errCollection = append(errCollection, err)
+		errs = append(errs, fmt.Sprintf("can not parse resourceableID  value %s", task[6]))
 	}
 	user.ResourceableID = int(resourceableID)
 
@@ -297,13 +313,13 @@ func parseUser(task []string) (user models.User, errCollection []error) {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	if len(errCollection) != 0 {
-		return user, errCollection
+	if len(errs) != 0 {
+		return user, errs
 	}
 
 	user.Password, err = user.GenerateHashedPassword()
 	if err != nil {
-		errCollection = append(errCollection, err)
+		errs = append(errs, fmt.Sprintf("fail to generate password  for value %s", task[6]))
 	}
 
 	return
