@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type Meals struct {
 	ID                  int8      `json:"id" db:"id"`
@@ -37,4 +40,11 @@ type Items struct {
 	MealsID   int8      `json:"meals_id" db:"meals_id"`
 	CreatedAt time.Time `json:"-" db:"created_at"`
 	UpdatedAt time.Time `json:"-" db:"updated_at"`
+}
+
+func (m Meals) Validation() error {
+	if m.Name != "" && m.Description != "" && m.Price != 0 && m.Calories != 0 && m.MealTypeID != 0 && m.RestaurantCuisineID != 0 {
+		return nil
+	}
+	return errors.New("invalid parameter")
 }

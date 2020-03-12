@@ -1,5 +1,7 @@
 package uploader
 
+import "context"
+
 type UploaderService interface {
-	SaveBulkdata(data [][]string) error
+	SaveBulkdata(ctx context.Context, data [][]string) error
 }
