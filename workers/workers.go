@@ -6,6 +6,7 @@ import (
 	"petpujaris/models"
 	"petpujaris/repository"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -74,11 +75,60 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
-
 		fmt.Println(id)
+		itemSplit := strings.Split(t[6], ",")
+		errData := p.createMealSubWorker(ctx, id, itemSplit)
+		if len(errData) != 0 {
+			errorRecord = append(errorRecord, t...)
+			errorRecord = append(errorRecord, errData...)
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+
 		errorlog <- errorLog{Records: errorRecord}
 		wg.Done()
 	}
+}
+
+func (p Pool) createMealSubWorker(ctx context.Context, mealId int64, itemSplit []string) []string {
+	items := make(chan models.Items, len(itemSplit))
+	errorlog := make(chan error, len(itemSplit))
+	var wgSub sync.WaitGroup
+	for i := 0; i < len(itemSplit); i++ {
+		go p.mealItemSubWorker(ctx, &wgSub, items, errorlog)
+	}
+
+	for t := 0; t < len(itemSplit); t++ {
+		wgSub.Add(1)
+		mealItemRecord := models.Items{
+			MealsID:   int8(mealId),
+			Name:      itemSplit[t],
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		fmt.Println("mealItemRecord", mealId, mealItemRecord)
+		items <- mealItemRecord
+	}
+
+	close(items)
+
+	var errorRecords []string
+	for t := 1; t < len(itemSplit); t++ {
+		errs := <-errorlog
+		if errs != nil {
+			errorRecords = append(errorRecords, errs.Error())
+		}
+	}
+	wgSub.Wait()
+	return errorRecords
+}
+
+func (p Pool) mealItemSubWorker(ctx context.Context, wgSub *sync.WaitGroup, items <-chan models.Items, errorlog chan<- error) {
+	for item := range items {
+		err := p.MealRegistry.SaveItem(ctx, item)
+		errorlog <- err
+	}
+	wgSub.Done()
 }
 
 func parseMealRecord(t []string) (models.Meals, []string) {
