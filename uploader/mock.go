@@ -11,8 +11,8 @@ type MockUploaderService struct {
 	mock.Mock
 }
 
-func (m *MockUploaderService) SaveBulkdata(ctx context.Context, fileData [][]string) error {
-	args := m.Called(ctx, fileData)
+func (m *MockUploaderService) SaveBulkdata(ctx context.Context, moduleName string, fileData [][]string) error {
+	args := m.Called(ctx, moduleName, fileData)
 	return args.Error(0)
 }
 

@@ -24,7 +24,7 @@ type User struct {
 func (u *User) GenerateHashedPassword() (hashedPassword string, err error) {
 	byteHashPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), 10)
 	if err != nil {
-		logger.LogError(err, "model.User.GenerateHashedPassword", fmt.Sprintf("error to generate hashPassword for user %v with password", u.Name, u.Password))
+		logger.LogError(err, "model.User.GenerateHashedPassword", fmt.Sprintf("error to generate hashPassword for user %v with password  %v ", u.Name, u.Password))
 		return
 	}
 
