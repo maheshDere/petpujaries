@@ -42,6 +42,15 @@ type Items struct {
 	UpdatedAt time.Time `json:"-" db:"updated_at"`
 }
 
+type MealScheduler struct {
+	ID        int64     `db:"id"`
+	Date      time.Time `db:"date"`
+	MealID    int64     `db:"meal_id"`
+	UserID    int64     `db:"user_id"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
 func (m Meals) Validation() error {
 	if m.Name != "" && m.Description != "" && m.Price != 0 && m.Calories != 0 && m.MealTypeID != 0 && m.RestaurantCuisineID != 0 {
 		return nil
@@ -68,4 +77,11 @@ func (mi MealsIngredients) Validation() error {
 		return nil
 	}
 	return errors.New("invalid meal ingredients")
+}
+
+func (ms MealScheduler) Validation() error {
+	if ms.MealID != 0 && ms.UserID != 0 {
+		return nil
+	}
+	return errors.New("invalid meal scheduler parameter")
 }

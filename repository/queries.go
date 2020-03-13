@@ -2,7 +2,7 @@ package repository
 
 import "fmt"
 
-var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, DeleteMealsQuery, DeleteMealsItemQuery, DeleteMealIngredientsQuery Command
+var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, DeleteMealsQuery, DeleteMealsItemQuery, DeleteMealIngredientsQuery, SaveMealSchedulerQuery Command
 
 type Command struct {
 	Query       string
@@ -71,5 +71,13 @@ func init() {
 		Table:       "meals",
 		Description: "DELETE MEALS DETAILS",
 		Query:       "delete from %s where id = $1 ",
+	}
+
+	SaveMealSchedulerQuery = Command{
+		Table:       "schedules",
+		Description: "INSERT MEALS SCHEDULER DETAILS",
+		Query: "insert into %s (date, meal_id, user_id, created_at, updated_at)" +
+			" values ($1, $2, $3, $4, $5)",
+		//ON CONFLICT (name, meal_id) DO NOTHING  (Need to add indexing on items table create unique INDEX index_name_meal_id on items (name,meal_id);)
 	}
 }
