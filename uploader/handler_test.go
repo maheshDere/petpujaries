@@ -29,7 +29,7 @@ func TestUploaderHandler_UploadFile(t *testing.T) {
 	gc := NewGRPCClient(client)
 	t.Run("stream file data", func(t *testing.T) {
 		mockFileOperation.On("Reader", mock.Anything).Return([][]string{{"mockrecord"}}, nil)
-		mockUploaderService.On("SaveBulkdata", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		mockUploaderService.On("SaveBulkdata", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		res, err := gc.UploadFile(ctx, "../test/test.csv", t)
 		assert.NoError(t, err)
 		assert.Equal(t, uint32(200), res.GetStatus())

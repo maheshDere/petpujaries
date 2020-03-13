@@ -78,6 +78,5 @@ func init() {
 		Description: "INSERT MEALS SCHEDULER DETAILS",
 		Query: "insert into %s (date, meal_id, user_id, created_at, updated_at)" +
 			" values ($1, $2, $3, $4, $5)",
-		//ON CONFLICT (name, meal_id) DO NOTHING  (Need to add indexing on items table create unique INDEX index_name_meal_id on items (name,meal_id);)
 	}
 }
