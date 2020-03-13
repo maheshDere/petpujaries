@@ -10,5 +10,7 @@ service-run:
 	ENVIRONMENT=development ./petpujaris
 
 test-run:
-	ENVIRONMENT=test go test -v -cover ./...  
+	ENVIRONMENT=test go test -v -p=1 -cover ./...  
 
+clear-test-cache:
+	go clean -testcache  
