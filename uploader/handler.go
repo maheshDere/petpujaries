@@ -27,7 +27,7 @@ func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) err
 	}
 
 	moduleName := req.GetInfo().GetModulename()
-
+	userID := req.GetInfo().GetUserid()
 	fileData := bytes.Buffer{}
 	fileSize := 0
 
@@ -68,6 +68,6 @@ func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) err
 		return status.Errorf(codes.Unknown, "error in read file")
 	}
 
-	uh.Service.SaveBulkdata(stream.Context(), moduleName, 0, data)
+	uh.Service.SaveBulkdata(stream.Context(), moduleName, userID, data)
 	return nil
 }

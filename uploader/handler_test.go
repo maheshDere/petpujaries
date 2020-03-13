@@ -55,7 +55,7 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f string, t *testing.T) (*
 	assert.NoError(t, err)
 
 	err = stream.Send(&UploadFileRequest{
-		Data: &UploadFileRequest_Info{&FileInfo{Modulename: "employee"}},
+		Data: &UploadFileRequest_Info{&FileInfo{Modulename: "employee", Userid: 1}},
 	})
 	assert.NoError(t, err)
 
