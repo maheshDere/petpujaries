@@ -20,7 +20,7 @@ func main() {
 
 	client := uploader.NewUploadServiceClient(conn)
 	gc := NewGRPCClient(client)
-	err = gc.UploadFile(context.Background(), "MealUpload.csv") //example file: AusVSIndMatch.csv //Restaurant Meal Upload.xlsx
+	err = gc.UploadFile(context.Background(), "SampleMealSchedulerUpload.csv") //example file: AusVSIndMatch.csv //Restaurant Meal Upload.xlsx
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -51,7 +51,7 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
 	}
 
 	err = stream.Send(&uploader.UploadFileRequest{
-		Data: &uploader.UploadFileRequest_Info{&uploader.FileInfo{Modulename: "meal"}},
+		Data: &uploader.UploadFileRequest_Info{&uploader.FileInfo{Modulename: "mealscheduler", Userid: 1}},
 	})
 
 	if err != nil {

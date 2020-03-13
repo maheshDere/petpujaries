@@ -23,11 +23,14 @@ const maxFileSize = 1 << 20
 func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) error {
 	req, err := stream.Recv()
 	if err != nil {
-		return status.Errorf(codes.Unknown, "can not recevice file")
+		return status.Errorf(codes.InvalidArgument, "can not recevice file")
 	}
 
 	moduleName := req.GetInfo().GetModulename()
 	userID := req.GetInfo().GetUserid()
+	if err := validateRequest(moduleName, userID); err != nil {
+		return err
+	}
 	fileData := bytes.Buffer{}
 	fileSize := 0
 
@@ -37,7 +40,7 @@ func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) err
 			break
 		}
 		if err != nil {
-			return status.Errorf(codes.Unknown, "can not recevice file")
+			return status.Errorf(codes.InvalidArgument, "can not recevice file")
 		}
 
 		chunk := req.GetChuckdata()
@@ -50,7 +53,7 @@ func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) err
 
 		_, err = fileData.Write(chunk)
 		if err != nil {
-			return status.Errorf(codes.Unknown, "can not recevice file")
+			return status.Errorf(codes.InvalidArgument, "can not recevice file")
 		}
 	}
 
@@ -60,14 +63,25 @@ func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) err
 		Size:    uint32(fileSize),
 	})
 	if err != nil {
-		return status.Errorf(codes.Unknown, "response not send")
+		return status.Errorf(codes.Internal, "response not send")
 	}
 
 	data, err := uh.FileService.Reader(&fileData)
 	if err != nil {
-		return status.Errorf(codes.Unknown, "error in read file")
+		return status.Errorf(codes.InvalidArgument, "error in read file")
 	}
 
 	uh.Service.SaveBulkdata(stream.Context(), moduleName, userID, data)
+	return nil
+}
+
+func validateRequest(moduleName string, userID int64) error {
+	if moduleName == "" {
+		return status.Errorf(codes.InvalidArgument, "module name parameter is required")
+	}
+
+	if moduleName == "mealscheduler" && userID <= 0 {
+		return status.Errorf(codes.InvalidArgument, "userID parameter is required for mealscheduler")
+	}
 	return nil
 }

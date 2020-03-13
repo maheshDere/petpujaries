@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/araddon/dateparse"
 )
 
 type Pool struct {
@@ -370,13 +372,15 @@ func parseScheduler(task []string) (models.MealScheduler, []string) {
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("can not parse Meal ID value %s", task[0]))
 	}
-	schedulerDate, err := time.Parse("2006-01-02", task[2])
+	schedulerDate, err := dateparse.ParseLocal(task[2])
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("invalid date %s", task[2]))
 	}
 	scheduler := models.MealScheduler{
-		MealID: mealID,
-		Date:   schedulerDate,
+		MealID:    mealID,
+		Date:      schedulerDate,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 	return scheduler, errs
 }
