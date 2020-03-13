@@ -9,6 +9,7 @@ import (
 
 var appConfig AppConfig
 var dbConfig DatabaseConfig
+var emailConfig EmailConfig
 
 func SetupConfig() error {
 	configFile := "application"
@@ -41,6 +42,10 @@ func LoadConfig() {
 		errs = append(errs, err)
 	}
 
+	if err := LoadEmailConfig(); err != nil {
+		errs = append(errs, err)
+	}
+
 	if len(errs) != 0 {
 		panic(errs)
 	}
@@ -61,12 +66,23 @@ func LoadDBConfig() error {
 	return nil
 }
 
+func LoadEmailConfig() error {
+	if err := viper.Unmarshal(&emailConfig); err != nil {
+		return fmt.Errorf("LoadEmailConfig : fail to load email config, %v", err)
+	}
+	return nil
+}
+
 func GetAppConfig() AppConfig {
 	return appConfig
 }
 
 func GetDBConfig() DatabaseConfig {
 	return dbConfig
+}
+
+func GetEmailConfig() EmailConfig {
+	return emailConfig
 }
 
 func ServerPort() int {
