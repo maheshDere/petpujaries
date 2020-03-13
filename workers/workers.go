@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"petpujaris/models"
 	"petpujaris/repository"
+	"petpujaris/utils"
 	"strconv"
 	"strings"
 	"sync"
@@ -244,7 +245,6 @@ func parseMealRecord(t []string) (models.Meals, []string) {
 	restaurantCuisineID, err := strconv.ParseInt(t[10], 10, 32)
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("can not parse Restaurant Cuisine ID value %s", t[10]))
-
 	}
 
 	mealReord := models.Meals{
@@ -264,10 +264,22 @@ func parseMealRecord(t []string) (models.Meals, []string) {
 
 func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog) {
 	var errorRecord []string
+	var err error
 	for task := range tasks {
 		wg.Done()
 		user, errs := parseUser(task)
 		if len(errs) != 0 {
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, errs...)
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+
+		key := utils.RandomString()
+
+		user.Password, err = user.GenerateHashedPassword(key)
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("fail to generate password for user %v", user.Name))
 			errorRecord = append(errorRecord, task...)
 			errorRecord = append(errorRecord, errs...)
 			errorlog <- errorLog{Records: errorRecord}
@@ -281,6 +293,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
+
 		errorlog <- errorLog{}
 	}
 }
@@ -310,15 +323,6 @@ func parseUser(task []string) (user models.User, errs []string) {
 	user.ResourceableType = task[7]
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
-
-	if len(errs) != 0 {
-		return user, errs
-	}
-
-	user.Password, err = user.GenerateHashedPassword()
-	if err != nil {
-		errs = append(errs, fmt.Sprintf("fail to generate password for user %v", user.Name))
-	}
 
 	return
 }

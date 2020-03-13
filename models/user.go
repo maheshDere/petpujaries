@@ -21,8 +21,8 @@ type User struct {
 	UpdatedAt        time.Time `db:"updated_at"`
 }
 
-func (u *User) GenerateHashedPassword() (hashedPassword string, err error) {
-	byteHashPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), 10)
+func (u *User) GenerateHashedPassword(key string) (hashedPassword string, err error) {
+	byteHashPassword, err := bcrypt.GenerateFromPassword([]byte(key), 10)
 	if err != nil {
 		logger.LogError(err, "model.User.GenerateHashedPassword", fmt.Sprintf("error to generate hashPassword for user %v with password  %v ", u.Name, u.Password))
 		return
