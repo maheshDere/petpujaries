@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"petpujaris/logger"
 	"time"
@@ -29,4 +30,11 @@ func (u *User) GenerateHashedPassword(key string) (hashedPassword string, err er
 	}
 
 	return string(byteHashPassword), nil
+}
+
+func (u *User) Validate() error {
+	if u.Name != "" || u.Email != "" || u.MobileNumber != "" || u.RoleID < 0 || u.ResourceableID < 0 || u.ResourceableType != "" {
+		return nil
+	}
+	return errors.New("Invalide user details")
 }

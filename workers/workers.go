@@ -288,8 +288,16 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			continue
 		}
 
-		key := utils.RandomString()
+		err = user.Validate()
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("Invalide user details for user %v", user.Name))
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, errs...)
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
 
+		key := utils.RandomString()
 		user.Password, err = user.GenerateHashedPassword(key)
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("fail to generate password for user %v", user.Name))
@@ -299,7 +307,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			continue
 		}
 
-		err := p.UserRepository.Save(ctx, user)
+		err = p.UserRepository.Save(ctx, user)
 		if err != nil {
 			errorRecord = append(errorRecord, task...)
 			errorRecord = append(errorRecord, err.Error())
