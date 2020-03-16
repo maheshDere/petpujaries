@@ -2,7 +2,7 @@ package repository
 
 import "fmt"
 
-var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery Command
+var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, GetResourceableIDQuery Command
 
 type Command struct {
 	Query       string
@@ -54,4 +54,11 @@ func init() {
 		Description: "INSERT USERS DETAILS",
 		Query:       "insert into %s (name, email, mobile_number, is_active, password_digest,  role_id,  resourceable_id,  resourceable_type, created_at, updated_at) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
 	}
+
+	GetResourceableIDQuery = Command{
+		Table:       "users",
+		Description: "FETCH RESOURCEABLE ID",
+		Query:       "select resourceable_id from %s where id = $1 and role_id = $2 and is_active = true",
+	}
+
 }
