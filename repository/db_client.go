@@ -18,6 +18,7 @@ type PgClient struct {
 type Client interface {
 	Query(ctx context.Context, cmd Command, args ...interface{}) (*sql.Rows, error)
 	Exec(ctx context.Context, cmd Command, args ...interface{}) (sql.Result, error)
+	QueryRow(ctx context.Context, cmd Command, args ...interface{}) *sql.Row
 }
 
 func (pgClient PgClient) Query(ctx context.Context, cmd Command, args ...interface{}) (*sql.Rows, error) {
@@ -26,6 +27,10 @@ func (pgClient PgClient) Query(ctx context.Context, cmd Command, args ...interfa
 
 func (pgClient PgClient) Exec(ctx context.Context, cmd Command, args ...interface{}) (sql.Result, error) {
 	return pgClient.db.Exec(cmd.GetQuery(), args...)
+}
+
+func (pgClient PgClient) QueryRow(ctx context.Context, cmd Command, args ...interface{}) *sql.Row {
+	return pgClient.db.QueryRow(cmd.GetQuery(), args...)
 }
 
 func NewPgClient(dbcfg config.DatabaseConfig) (PgClient, error) {
