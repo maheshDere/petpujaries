@@ -1,0 +1,18 @@
+syntax = "proto3";
+package downloader;
+
+message EmployeeDownloadFileRequest {
+    string adminID =1;
+    int64 total_employee_count = 2;
+}
+
+message EmployeeDownloadFileResponse{
+    message employee_data {
+        repeated string employee_data = 1;
+    }
+    repeated employee_data employee_details = 1;
+}
+
+service DownloadService {
+    rpc DownloadEmployeeFileData(EmployeeDownloadFileRequest) returns (EmployeeDownloadFileResponse) { }
+}
