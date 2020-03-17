@@ -32,15 +32,8 @@ func TestGetPrimaryUserDetails(t *testing.T) {
 		resourceableID := uint64(7)
 		ctx := context.Background()
 		ur, ufs := setup()
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 		expectedUserPrimaryDetials := [][]string{[]string{"name", "email", "mobile_number", "is_active", "role_id", "resourceable_id", "resourceable_type"}, []string{" ", " ", " ", "true", "1", "7", "Company"}, []string{" ", " ", " ", "true", "1", "7", "Company"}, []string{" ", " ", " ", "true", "1", "7", "Company"}}
-=======
-		expectedUserPrimaryDetials := [][]string{[]string{"name", "email", "mobile_number", "is_active", "role_id", " resourceable_id", " resourceable_type"}, []string{"", "", "", "true", "1", "7", "Company"}, []string{"", "", "", "true", "1", "7", "Company"}, []string{"", "", "", "true", "1", "7", "Company"}}
->>>>>>> add method to downloader.user service to create user primary detils
-=======
-		expectedUserPrimaryDetials := [][]string{[]string{"name", "email", "mobile_number", "is_active", "role_id", "resourceable_id", "resourceable_type"}, []string{" ", " ", " ", "true", "1", "7", "Company"}, []string{" ", " ", " ", "true", "1", "7", "Company"}, []string{" ", " ", " ", "true", "1", "7", "Company"}}
->>>>>>> fix proto file and add example for  grpc client
 		ur.On("GetResourceableID", ctx, uint64(1)).Return(resourceableID, nil).Once()
 		t.Run("It should return primary user details", func(t *testing.T) {
 			userPrimaryDetials, err := ufs.GetPrimaryUserDetails(ctx, uint64(1), uint64(3))
