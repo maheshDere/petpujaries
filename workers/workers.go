@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"petpujaris/models"
 	"petpujaris/repository"
+	"petpujaris/utils"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,6 +25,8 @@ type errorLog struct {
 	Records []string
 	MealID  int64
 }
+
+const EMP_SHEET_COLUMN_LENGTH = 7
 
 func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository repository.UserRegistry, mealSchedulerRegistry repository.MealSchedulerRegistry) Pool {
 	return Pool{Workers: workers, MealRegistry: mealRegistry, UserRepository: userRepository, MealSchedulerRegistry: mealSchedulerRegistry}
@@ -257,7 +260,6 @@ func parseMealRecord(t []string) (models.Meals, []string) {
 	restaurantCuisineID, err := strconv.ParseInt(t[10], 10, 32)
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("can not parse Restaurant Cuisine ID value %s", t[10]))
-
 	}
 
 	mealReord := models.Meals{
@@ -277,6 +279,7 @@ func parseMealRecord(t []string) (models.Meals, []string) {
 
 func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog) {
 	var errorRecord []string
+	var err error
 	for task := range tasks {
 		wg.Done()
 		user, errs := parseUser(task)
@@ -287,19 +290,45 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			continue
 		}
 
-		err := p.UserRepository.Save(ctx, user)
+		err = user.Validate()
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("Invalide user details for user %v", user.Name))
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, errs...)
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+
+		key := utils.RandomString()
+		user.Password, err = user.GenerateHashedPassword(key)
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("fail to generate password for user %v", user.Name))
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, errs...)
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+
+		err = p.UserRepository.Save(ctx, user)
 		if err != nil {
 			errorRecord = append(errorRecord, task...)
 			errorRecord = append(errorRecord, err.Error())
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
+
 		errorlog <- errorLog{}
 	}
 }
 
 func parseUser(task []string) (user models.User, errs []string) {
 	var err error
+
+	if len(task) != EMP_SHEET_COLUMN_LENGTH {
+		errs = append(errs, fmt.Sprint("Invalid sheet ,contain less information then expected"))
+		return
+	}
+
 	user.Name = task[0]
 	user.Email = task[1]
 	user.MobileNumber = task[2]
@@ -308,30 +337,21 @@ func parseUser(task []string) (user models.User, errs []string) {
 		errs = append(errs, fmt.Sprintf("can not parse IsActive  value %s", task[3]))
 	}
 
-	roleID, err := strconv.ParseFloat(task[5], 64)
+	roleID, err := strconv.ParseInt(task[4], 10, 64)
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("can not parse role ID  value %s", task[5]))
 	}
 	user.RoleID = int(roleID)
 
-	resourceableID, err := strconv.ParseFloat(task[6], 64)
+	resourceableID, err := strconv.ParseInt(task[5], 10, 64)
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("can not parse resourceableID  value %s", task[6]))
 	}
 	user.ResourceableID = int(resourceableID)
 
-	user.ResourceableType = task[7]
+	user.ResourceableType = task[6]
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
-
-	if len(errs) != 0 {
-		return user, errs
-	}
-
-	user.Password, err = user.GenerateHashedPassword()
-	if err != nil {
-		errs = append(errs, fmt.Sprintf("fail to generate password for user %v", user.Name))
-	}
 
 	return
 }
