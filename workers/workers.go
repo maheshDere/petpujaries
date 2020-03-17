@@ -9,12 +9,15 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/araddon/dateparse"
 )
 
 type Pool struct {
-	Workers        int
-	MealRegistry   repository.MealRegistry
-	UserRepository repository.UserRegistry
+	Workers               int
+	MealRegistry          repository.MealRegistry
+	UserRepository        repository.UserRegistry
+	MealSchedulerRegistry repository.MealSchedulerRegistry
 }
 
 type errorLog struct {
@@ -22,11 +25,11 @@ type errorLog struct {
 	MealID  int64
 }
 
-func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository repository.UserRegistry) Pool {
-	return Pool{Workers: workers, MealRegistry: mealRegistry, UserRepository: userRepository}
+func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository repository.UserRegistry, mealSchedulerRegistry repository.MealSchedulerRegistry) Pool {
+	return Pool{Workers: workers, MealRegistry: mealRegistry, UserRepository: userRepository, MealSchedulerRegistry: mealSchedulerRegistry}
 }
 
-func (p Pool) Run(ctx context.Context, module string, data [][]string) {
+func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]string) {
 	tasks := make(chan []string, len(data))
 	errorlog := make(chan errorLog, len(data))
 
@@ -40,6 +43,11 @@ func (p Pool) Run(ctx context.Context, module string, data [][]string) {
 	case "employee":
 		for w := 1; w <= p.Workers; w++ {
 			go p.UserWorker(ctx, &wg, tasks, errorlog)
+		}
+
+	case "mealscheduler":
+		for w := 1; w <= p.Workers; w++ {
+			go p.SchedulerWorker(ctx, &wg, &userID, tasks, errorlog)
 		}
 	}
 
@@ -326,4 +334,53 @@ func parseUser(task []string) (user models.User, errs []string) {
 	}
 
 	return
+}
+
+func (p Pool) SchedulerWorker(ctx context.Context, wg *sync.WaitGroup, userID *int64, tasks <-chan []string, errorlog chan<- errorLog) {
+	var errorRecord []string
+	for task := range tasks {
+		wg.Done()
+		scheduler, errs := parseScheduler(task)
+		if len(errs) != 0 {
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, errs...)
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+		scheduler.UserID = *userID
+		if err := scheduler.Validation(); err != nil {
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, err.Error())
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+
+		err := p.MealSchedulerRegistry.Save(ctx, scheduler)
+		if err != nil {
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, err.Error())
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+		errorlog <- errorLog{}
+	}
+}
+
+func parseScheduler(task []string) (models.MealScheduler, []string) {
+	var errs []string
+	mealID, err := strconv.ParseInt(task[0], 10, 32)
+	if err != nil {
+		errs = append(errs, fmt.Sprintf("can not parse Meal ID value %s", task[0]))
+	}
+	schedulerDate, err := dateparse.ParseLocal(task[2])
+	if err != nil {
+		errs = append(errs, fmt.Sprintf("invalid date %s", task[2]))
+	}
+	scheduler := models.MealScheduler{
+		MealID:    mealID,
+		Date:      schedulerDate,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	return scheduler, errs
 }

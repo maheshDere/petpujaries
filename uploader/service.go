@@ -9,8 +9,8 @@ type uploaderService struct {
 	WorkerPool workers.Pool
 }
 
-func (rs uploaderService) SaveBulkdata(ctx context.Context, module string, data [][]string) error {
-	rs.WorkerPool.Run(ctx, module, data)
+func (rs uploaderService) SaveBulkdata(ctx context.Context, module string, userID int64, data [][]string) error {
+	rs.WorkerPool.Run(ctx, module, userID, data)
 	return nil
 }
 

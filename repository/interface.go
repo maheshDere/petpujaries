@@ -16,3 +16,7 @@ type MealRegistry interface {
 	SaveMealIngredients(ctx context.Context, mealIngredients models.MealsIngredients) error
 	Delete(ctx context.Context, MealID int64)
 }
+
+type MealSchedulerRegistry interface {
+	Save(ctx context.Context, schedulerRecord models.MealScheduler) error
+}

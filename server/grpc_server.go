@@ -38,7 +38,8 @@ func (gc GRPC) Start() error {
 
 	mealRegistry := repository.NewMealsRegistry(pgClient)
 	userRegistry := repository.NewUserRegistry(pgClient)
-	workerPool := workers.NewPool(WORKERS, mealRegistry, userRegistry)
+	mealScheduler := repository.NewMealSchedulerRegistry(pgClient)
+	workerPool := workers.NewPool(WORKERS, mealRegistry, userRegistry, mealScheduler)
 
 	uploaderService := uploader.NewUploaderService(workerPool)
 	uploaderHandler := uploader.NewUploaderHandler(uploaderService, fileService)
