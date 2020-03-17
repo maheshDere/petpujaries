@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
@@ -10,27 +11,10 @@ import (
 	"petpujaris/downloader"
 	"petpujaris/uploader"
 
+	"github.com/urfave/cli"
+
 	"google.golang.org/grpc"
 )
-
-func main() {
-	conn, err := grpc.Dial(":8080", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Could not connect to backend %v", err)
-	}
-
-	client := uploader.NewUploadServiceClient(conn)
-	gc := NewGRPCClient(client)
-
-	err = gc.UploadFile(context.Background(), "SampleMealSchedulerUpload.csv") //example file: AusVSIndMatch.csv //Restaurant Meal Upload.xlsx
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	/* downloaderClient := downloader.NewDownloadServiceClient(conn)
-	gdc := NewGRPCDownloaderClient(downloaderClient)
-	gdc.DownloadUserPrimarydata(context.Background()) */
-}
 
 type GRPCDownloaderClient struct {
 	Client downloader.DownloadServiceClient
@@ -41,32 +25,119 @@ type GRPCClient struct {
 	ChunkSize int
 }
 
-func NewGRPCDownloaderClient(cc downloader.DownloadServiceClient) *GRPCDownloaderClient {
-	return &GRPCDownloaderClient{cc}
+var gc *GRPCClient
+var gdc *GRPCDownloaderClient
+
+func main() {
+	conn, err := grpc.Dial(":8080", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Could not connect to backend %v", err)
+	}
+
+	client := uploader.NewUploadServiceClient(conn)
+	gc = NewGRPCClient(client)
+	downloaderClient := downloader.NewDownloadServiceClient(conn)
+	gdc = NewGRPCDownloaderClient(downloaderClient)
+
+	cliApp := cli.NewApp()
+	cliApp.Name = "data uploadation service"
+	cliApp.Version = "1.0.0"
+	cliApp.Commands = []cli.Command{
+		{
+			Name:  "employee_data_upload",
+			Usage: "upload users data from csv file to postgres database",
+			Action: func(c *cli.Context) error {
+				fileName := c.Args().Get(0)
+				err := uploadUsersData(fileName)
+				return err
+			},
+		},
+		{
+			Name:  "meal_data_upload",
+			Usage: "upload restorent data from csv to postgres database",
+			Action: func(c *cli.Context) error {
+				fileName := c.Args().Get(0)
+				err := uploadMealData(fileName)
+				return err
+			},
+		},
+		{
+			Name:  "meal_scheduler_data_upload",
+			Usage: "upload meal scheduler data from csv to postgres database",
+			Action: func(c *cli.Context) error {
+				fileName := c.Args().Get(0)
+				err := uploadMealSchedulerData(fileName)
+				return err
+			},
+		},
+		{
+			Name:  "download_user__upload_data_template",
+			Usage: "get primary users data to generate user uploadation csv file",
+			Action: func(c *cli.Context) error {
+				err := DownloadUserTemplateData()
+				return err
+			},
+		},
+	}
+	if err := cliApp.Run(os.Args); err != nil {
+		panic(err)
+	}
+
 }
 
-func NewGRPCClient(cc uploader.UploadServiceClient) *GRPCClient {
-	return &GRPCClient{cc, 1024}
+func uploadUsersData(fileName string) error {
+	module := "employee"
+	err := gc.UploadFile(context.Background(), fileName, module) //example file: AusVSIndMatch.csv //Restaurant Meal Upload.xlsx
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return err
+}
+
+func uploadMealData(fileName string) error {
+	moduleName := "meal"
+	err := gc.UploadFile(context.Background(), fileName, moduleName) //example file: AusVSIndMatch.csv //Restaurant Meal Upload.xlsx
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return err
+}
+
+func uploadMealSchedulerData(fileName string) error {
+	return nil
+}
+
+func DownloadUserTemplateData() error {
+	gdc.DownloadUserPrimarydata(context.Background())
+	return nil
 }
 
 func (gdc *GRPCDownloaderClient) DownloadUserPrimarydata(ctx context.Context) {
 	var req downloader.EmployeeFileDownloadRequest
 	req.AdminID = uint64(7)
 	req.TotalEmployeeCount = uint64(4)
+
+	csvFile, err := os.Create("employee_details.csv")
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+	defer csvFile.Close()
+
+	csvwriter := csv.NewWriter(csvFile)
+
 	response, err := gdc.Client.DownloadEmployeeFileData(ctx, &req)
 	if err != nil {
 		fmt.Println("error :", err)
 	}
 	for _, userData := range response.EmployeeDetails {
-		for _, userinfo := range userData.EmployeeData {
-			fmt.Printf("%v  ", userinfo)
-		}
-		fmt.Printf("\n")
+		_ = csvwriter.Write(userData.EmployeeData)
 	}
+	csvwriter.Flush()
 }
 
-func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
-
+func (gc *GRPCClient) UploadFile(ctx context.Context, f, module string) error {
 	file, err := os.Open(f)
 	if err != nil {
 		return fmt.Errorf("File not open %v", err)
@@ -79,7 +150,7 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
 	}
 
 	err = stream.Send(&uploader.UploadFileRequest{
-		Data: &uploader.UploadFileRequest_Info{&uploader.FileInfo{Modulename: "mealscheduler", Userid: 1}},
+		Data: &uploader.UploadFileRequest_Info{&uploader.FileInfo{Modulename: module, Userid: 1}},
 	})
 
 	if err != nil {
@@ -117,4 +188,12 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
 
 	fmt.Println("File uploaded successfully", res.GetStatus(), res.GetMessage(), res.GetSize())
 	return nil
+}
+
+func NewGRPCDownloaderClient(cc downloader.DownloadServiceClient) *GRPCDownloaderClient {
+	return &GRPCDownloaderClient{cc}
+}
+
+func NewGRPCClient(cc uploader.UploadServiceClient) *GRPCClient {
+	return &GRPCClient{cc, 1024}
 }
