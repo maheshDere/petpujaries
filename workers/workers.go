@@ -20,6 +20,10 @@ var mealsSheetHeader = []string{"MealName", "Description", "ImageUrl", "Price", 
 var schedulerSheetHeader = []string{"MealID", "MealName", "Date", "Errors"}
 var employeeSheetHeader = []string{"name", "email", "mobile_number", "is_active", "role_id", "resourceable_id", "resourceable_type", "Errors"}
 
+const EMP_SHEET_COLUMN_LENGTH = 7
+const MEALS_SHEET_COLUMN_LENGTH = 12
+const MEALS_SCHEDULER_COLUMN_LENGTH = 3
+
 type Pool struct {
 	Workers               int
 	Emailservice          email.EmailService
@@ -32,8 +36,6 @@ type errorLog struct {
 	Records []string
 	MealID  int64
 }
-
-const EMP_SHEET_COLUMN_LENGTH = 7
 
 func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository repository.UserRegistry, es email.EmailService, mealSchedulerRegistry repository.MealSchedulerRegistry) Pool {
 	return Pool{Workers: workers, MealRegistry: mealRegistry, UserRepository: userRepository, Emailservice: es, MealSchedulerRegistry: mealSchedulerRegistry}
@@ -247,6 +249,11 @@ func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup
 
 func parseMealRecord(t []string) (models.Meals, []string) {
 	var errs []string
+	if len(t) != MEALS_SHEET_COLUMN_LENGTH {
+		errs = append(errs, fmt.Sprint("Invalid sheet ,contain less information then expected"))
+		return models.Meals{}, errs
+	}
+
 	price, err := strconv.ParseFloat(t[3], 32)
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("can not parse Price value %s", t[3]))
@@ -403,6 +410,11 @@ func (p Pool) SchedulerWorker(ctx context.Context, wg *sync.WaitGroup, userID *i
 
 func parseScheduler(task []string) (models.MealScheduler, []string) {
 	var errs []string
+	if len(task) != MEALS_SCHEDULER_COLUMN_LENGTH {
+		errs = append(errs, fmt.Sprint("Invalid sheet ,contain less information then expected"))
+		return models.MealScheduler{}, errs
+	}
+
 	mealID, err := strconv.ParseInt(task[0], 10, 32)
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("can not parse Meal ID value %s", task[0]))
