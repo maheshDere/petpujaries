@@ -16,6 +16,14 @@ import (
 	"github.com/araddon/dateparse"
 )
 
+var mealsSheetHeader = []string{"MealName", "Description", "ImageUrl", "Price", "Calories", "IsActive", "Item", "Ingredients", "meal_type_id", "MealType", "restaurant_cuisine_id", "CuisineName", "Errors"}
+var schedulerSheetHeader = []string{"MealID", "MealName", "Date", "Errors"}
+var employeeSheetHeader = []string{"name", "email", "mobile_number", "is_active", "role_id", "resourceable_id", "resourceable_type", "Errors"}
+
+const EMP_SHEET_COLUMN_LENGTH = 7
+const MEALS_SHEET_COLUMN_LENGTH = 12
+const MEALS_SCHEDULER_COLUMN_LENGTH = 3
+
 type Pool struct {
 	Workers               int
 	Emailservice          email.EmailService
@@ -29,32 +37,33 @@ type errorLog struct {
 	MealID  int64
 }
 
-const EMP_SHEET_COLUMN_LENGTH = 7
-
 func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository repository.UserRegistry, es email.EmailService, mealSchedulerRegistry repository.MealSchedulerRegistry) Pool {
 	return Pool{Workers: workers, MealRegistry: mealRegistry, UserRepository: userRepository, Emailservice: es, MealSchedulerRegistry: mealSchedulerRegistry}
 }
 
-func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]string) {
+func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]string) [][]string {
 	tasks := make(chan []string, len(data))
 	errorlog := make(chan errorLog, len(data))
-
+	var errorRecords [][]string
 	var wg sync.WaitGroup
 	switch strings.ToLower(module) {
 	case "meal":
 		for w := 1; w <= p.Workers; w++ {
 			go p.mealWorker(ctx, w, &wg, tasks, errorlog)
 		}
+		errorRecords = append(errorRecords, mealsSheetHeader)
 
 	case "employee":
 		for w := 1; w <= p.Workers; w++ {
 			go p.UserWorker(ctx, &wg, tasks, errorlog)
 		}
+		errorRecords = append(errorRecords, employeeSheetHeader)
 
 	case "mealscheduler":
 		for w := 1; w <= p.Workers; w++ {
 			go p.SchedulerWorker(ctx, &wg, &userID, tasks, errorlog)
 		}
+		errorRecords = append(errorRecords, mealsSheetHeader)
 	}
 
 	for t := 1; t < len(data); t++ {
@@ -63,7 +72,7 @@ func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]str
 	}
 
 	close(tasks)
-	var errorRecords [][]string
+
 	for t := 1; t < len(data); t++ {
 		errs := <-errorlog
 		if len(errs.Records) != 0 {
@@ -76,6 +85,7 @@ func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]str
 
 	fmt.Println("errorRecords ", errorRecords)
 	wg.Wait()
+	return errorRecords
 }
 
 func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog) {
@@ -88,7 +98,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 		}
 		if len(errs) != 0 {
 			errorRecord = append(errorRecord, t...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -105,7 +115,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 		errData := p.createMealSubWorker(ctx, id, itemSplit)
 		if len(errData) != 0 {
 			errorRecord = append(errorRecord, t...)
-			errorRecord = append(errorRecord, errData...)
+			errorRecord = append(errorRecord, strings.Join(errData[:], ","))
 			errorlog <- errorLog{Records: errorRecord, MealID: id}
 			continue
 		}
@@ -114,7 +124,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 		errData = p.createMealIngredientSubWorker(ctx, id, ingredientSplit)
 		if len(errData) != 0 {
 			errorRecord = append(errorRecord, t...)
-			errorRecord = append(errorRecord, errData...)
+			errorRecord = append(errorRecord, strings.Join(errData[:], ","))
 			errorlog <- errorLog{Records: errorRecord, MealID: id}
 			continue
 		}
@@ -239,6 +249,11 @@ func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup
 
 func parseMealRecord(t []string) (models.Meals, []string) {
 	var errs []string
+	if len(t) != MEALS_SHEET_COLUMN_LENGTH {
+		errs = append(errs, fmt.Sprint("Invalid sheet ,contain less information then expected"))
+		return models.Meals{}, errs
+	}
+
 	price, err := strconv.ParseFloat(t[3], 32)
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("can not parse Price value %s", t[3]))
@@ -287,7 +302,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 		user, errs := parseUser(task)
 		if len(errs) != 0 {
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -296,7 +311,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("Invalide user details for user %v", user.Name))
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -306,7 +321,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("fail to generate password for user %v", user.Name))
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -370,7 +385,7 @@ func (p Pool) SchedulerWorker(ctx context.Context, wg *sync.WaitGroup, userID *i
 		scheduler, errs := parseScheduler(task)
 		if len(errs) != 0 {
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -395,6 +410,11 @@ func (p Pool) SchedulerWorker(ctx context.Context, wg *sync.WaitGroup, userID *i
 
 func parseScheduler(task []string) (models.MealScheduler, []string) {
 	var errs []string
+	if len(task) != MEALS_SCHEDULER_COLUMN_LENGTH {
+		errs = append(errs, fmt.Sprint("Invalid sheet ,contain less information then expected"))
+		return models.MealScheduler{}, errs
+	}
+
 	mealID, err := strconv.ParseInt(task[0], 10, 32)
 	if err != nil {
 		errs = append(errs, fmt.Sprintf("can not parse Meal ID value %s", task[0]))
