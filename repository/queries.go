@@ -2,7 +2,7 @@ package repository
 
 import "fmt"
 
-var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery Command
+var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, DeleteMealsQuery, DeleteMealsItemQuery, DeleteMealIngredientsQuery Command
 
 type Command struct {
 	Query       string
@@ -53,5 +53,23 @@ func init() {
 		Table:       "users",
 		Description: "INSERT USERS DETAILS",
 		Query:       "insert into %s (name, email, mobile_number, is_active, password_digest,  role_id,  resourceable_id,  resourceable_type, created_at, updated_at) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+	}
+
+	DeleteMealsItemQuery = Command{
+		Table:       "items",
+		Description: "DELETE ITEMS DETAILS",
+		Query:       "delete from %s where meal_id = $1 ",
+	}
+
+	DeleteMealIngredientsQuery = Command{
+		Table:       "meal_ingredients",
+		Description: "DELETE MEAL INGREDIENTS DETAILS",
+		Query:       "delete from %s where meal_id = $1 ",
+	}
+
+	DeleteMealsQuery = Command{
+		Table:       "meals",
+		Description: "DELETE MEALS DETAILS",
+		Query:       "delete from %s where id = $1 ",
 	}
 }
