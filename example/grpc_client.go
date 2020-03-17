@@ -87,7 +87,7 @@ func main() {
 
 func uploadUsersData(fileName string) error {
 	module := "employee"
-	err := gc.UploadFile(context.Background(), fileName, module) //example file: AusVSIndMatch.csv //Restaurant Meal Upload.xlsx
+	err := gc.UploadFile(context.Background(), fileName, module)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -97,7 +97,7 @@ func uploadUsersData(fileName string) error {
 
 func uploadMealData(fileName string) error {
 	moduleName := "meal"
-	err := gc.UploadFile(context.Background(), fileName, moduleName) //example file: AusVSIndMatch.csv //Restaurant Meal Upload.xlsx
+	err := gc.UploadFile(context.Background(), fileName, moduleName)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -106,7 +106,13 @@ func uploadMealData(fileName string) error {
 }
 
 func uploadMealSchedulerData(fileName string) error {
-	return nil
+	moduleName := "mealscheduler"
+	err := gc.UploadFile(context.Background(), fileName, moduleName)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return err
 }
 
 func DownloadUserTemplateData() error {
