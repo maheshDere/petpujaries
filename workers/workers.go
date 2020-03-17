@@ -3,6 +3,8 @@ package workers
 import (
 	"context"
 	"fmt"
+	"petpujaris/email"
+	"petpujaris/logger"
 	"petpujaris/models"
 	"petpujaris/repository"
 	"petpujaris/utils"
@@ -16,6 +18,7 @@ import (
 
 type Pool struct {
 	Workers               int
+	Emailservice          email.EmailService
 	MealRegistry          repository.MealRegistry
 	UserRepository        repository.UserRegistry
 	MealSchedulerRegistry repository.MealSchedulerRegistry
@@ -28,8 +31,8 @@ type errorLog struct {
 
 const EMP_SHEET_COLUMN_LENGTH = 7
 
-func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository repository.UserRegistry, mealSchedulerRegistry repository.MealSchedulerRegistry) Pool {
-	return Pool{Workers: workers, MealRegistry: mealRegistry, UserRepository: userRepository, MealSchedulerRegistry: mealSchedulerRegistry}
+func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository repository.UserRegistry, es email.EmailService, mealSchedulerRegistry repository.MealSchedulerRegistry) Pool {
+	return Pool{Workers: workers, MealRegistry: mealRegistry, UserRepository: userRepository, Emailservice: es, MealSchedulerRegistry: mealSchedulerRegistry}
 }
 
 func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]string) {
@@ -67,7 +70,6 @@ func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]str
 			errorRecords = append(errorRecords, errs.Records)
 			if errs.MealID != 0 {
 				p.MealRegistry.Delete(ctx, errs.MealID)
-				fmt.Println("record deleted ", errs.MealID)
 			}
 		}
 	}
@@ -315,6 +317,11 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			errorRecord = append(errorRecord, err.Error())
 			errorlog <- errorLog{Records: errorRecord}
 			continue
+		}
+
+		err := p.Emailservice.SendMail(ctx, []string{user.Email}, key)
+		if err != nil {
+			logger.LogError(err, "worker", fmt.Sprintf("fail to send email for user %v", user.Name))
 		}
 
 		errorlog <- errorLog{}

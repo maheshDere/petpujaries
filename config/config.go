@@ -18,6 +18,11 @@ type DatabaseConfig struct {
 	MaxIdleConnections int
 }
 
+type EmailConfig struct {
+	Email    string
+	Password string
+}
+
 func (dbcfg DatabaseConfig) DataSourceURL() string {
 	/* db://user:secret@localhost:6379/0?foo=bar&qux=baz */
 	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", dbcfg.User, dbcfg.Password, dbcfg.Host, dbcfg.Port, dbcfg.DBName, dbcfg.SslMode)
