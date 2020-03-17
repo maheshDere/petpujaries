@@ -1,0 +1,7 @@
+name,email,mobile_number,is_active,role_id, resourceable_id, resourceable_type
+josh employee 11,employee11@josh.com,8044358046,t,1,1,Company
+josh employee 12,employee12@josh.com,7355785295,t,1,1,Company
+calsoft employee 11,employee11@calsoft.com,6370123864,t,1,2,Company
+calsoft employee 12,employee12@calsoft.com,8290605799,t,1,2,Company
+spryiq employee 12, employee11@spryiq.com,9884885572,t,1,3,Company
+spryiq employee 12,employee12@spryiq.com,4792306476,t,1,3,Company
