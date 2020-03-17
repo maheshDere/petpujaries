@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"petpujaris/config"
+	"petpujaris/email"
 	"petpujaris/filemanager"
 	"petpujaris/logger"
 	"petpujaris/repository"
@@ -38,7 +39,11 @@ func (gc GRPC) Start() error {
 
 	mealRegistry := repository.NewMealsRegistry(pgClient)
 	userRegistry := repository.NewUserRegistry(pgClient)
-	workerPool := workers.NewPool(WORKERS, mealRegistry, userRegistry)
+
+	emailConfig := config.GetEmailConfig()
+	emailClient := email.NewEmailClient()
+	emailService := email.NewEmailService(emailConfig.Email, emailConfig.Password, email.EmailSubject, emailClient)
+	workerPool := workers.NewPool(WORKERS, mealRegistry, userRegistry, emailService)
 
 	uploaderService := uploader.NewUploaderService(workerPool)
 	uploaderHandler := uploader.NewUploaderHandler(uploaderService, fileService)
