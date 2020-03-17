@@ -88,7 +88,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 		}
 		if len(errs) != 0 {
 			errorRecord = append(errorRecord, t...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -105,7 +105,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 		errData := p.createMealSubWorker(ctx, id, itemSplit)
 		if len(errData) != 0 {
 			errorRecord = append(errorRecord, t...)
-			errorRecord = append(errorRecord, errData...)
+			errorRecord = append(errorRecord, strings.Join(errData[:], ","))
 			errorlog <- errorLog{Records: errorRecord, MealID: id}
 			continue
 		}
@@ -114,7 +114,7 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 		errData = p.createMealIngredientSubWorker(ctx, id, ingredientSplit)
 		if len(errData) != 0 {
 			errorRecord = append(errorRecord, t...)
-			errorRecord = append(errorRecord, errData...)
+			errorRecord = append(errorRecord, strings.Join(errData[:], ","))
 			errorlog <- errorLog{Records: errorRecord, MealID: id}
 			continue
 		}
@@ -287,7 +287,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 		user, errs := parseUser(task)
 		if len(errs) != 0 {
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -296,7 +296,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("Invalide user details for user %v", user.Name))
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -306,7 +306,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("fail to generate password for user %v", user.Name))
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -370,7 +370,7 @@ func (p Pool) SchedulerWorker(ctx context.Context, wg *sync.WaitGroup, userID *i
 		scheduler, errs := parseScheduler(task)
 		if len(errs) != 0 {
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, errs...)
+			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
