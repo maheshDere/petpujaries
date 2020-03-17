@@ -16,6 +16,10 @@ import (
 	"github.com/araddon/dateparse"
 )
 
+var mealsSheetHeader = []string{"MealName", "Description", "ImageUrl", "Price", "Calories", "IsActive", "Item", "Ingredients", "meal_type_id", "MealType", "restaurant_cuisine_id", "CuisineName", "Errors"}
+var schedulerSheetHeader = []string{"MealID", "MealName", "Date", "Errors"}
+var employeeSheetHeader = []string{"name", "email", "mobile_number", "is_active", "role_id", "resourceable_id", "resourceable_type", "Errors"}
+
 type Pool struct {
 	Workers               int
 	Emailservice          email.EmailService
@@ -35,26 +39,29 @@ func NewPool(workers int, mealRegistry repository.MealRegistry, userRepository r
 	return Pool{Workers: workers, MealRegistry: mealRegistry, UserRepository: userRepository, Emailservice: es, MealSchedulerRegistry: mealSchedulerRegistry}
 }
 
-func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]string) {
+func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]string) [][]string {
 	tasks := make(chan []string, len(data))
 	errorlog := make(chan errorLog, len(data))
-
+	var errorRecords [][]string
 	var wg sync.WaitGroup
 	switch strings.ToLower(module) {
 	case "meal":
 		for w := 1; w <= p.Workers; w++ {
 			go p.mealWorker(ctx, w, &wg, tasks, errorlog)
 		}
+		errorRecords = append(errorRecords, mealsSheetHeader)
 
 	case "employee":
 		for w := 1; w <= p.Workers; w++ {
 			go p.UserWorker(ctx, &wg, tasks, errorlog)
 		}
+		errorRecords = append(errorRecords, employeeSheetHeader)
 
 	case "mealscheduler":
 		for w := 1; w <= p.Workers; w++ {
 			go p.SchedulerWorker(ctx, &wg, &userID, tasks, errorlog)
 		}
+		errorRecords = append(errorRecords, mealsSheetHeader)
 	}
 
 	for t := 1; t < len(data); t++ {
@@ -63,7 +70,7 @@ func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]str
 	}
 
 	close(tasks)
-	var errorRecords [][]string
+
 	for t := 1; t < len(data); t++ {
 		errs := <-errorlog
 		if len(errs.Records) != 0 {
@@ -76,6 +83,7 @@ func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]str
 
 	fmt.Println("errorRecords ", errorRecords)
 	wg.Wait()
+	return errorRecords
 }
 
 func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog) {

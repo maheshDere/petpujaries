@@ -57,21 +57,29 @@ func (uh *UploaderHandler) UploadFile(stream UploadService_UploadFileServer) err
 		}
 	}
 
-	err = stream.SendAndClose(&UploadFileResponse{
-		Message: "Upload received with success",
-		Status:  200,
-		Size:    uint32(fileSize),
-	})
-	if err != nil {
-		return status.Errorf(codes.Internal, "response not send")
-	}
-
 	data, err := uh.FileService.Reader(&fileData)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "error in read file")
 	}
 
-	uh.Service.SaveBulkdata(stream.Context(), moduleName, userID, data)
+	errorRecords := uh.Service.SaveBulkdata(stream.Context(), moduleName, userID, data)
+	uploaderFileResposne := UploadFileResponse{
+		Message: "Upload received with success",
+		Status:  200,
+		Size:    uint32(fileSize),
+	}
+
+	for _, er := range errorRecords {
+		var errorData ErrorRecords
+		errorData.Error = er
+		uploaderFileResposne.ErrorRecords = append(uploaderFileResposne.ErrorRecords, &errorData)
+	}
+
+	err = stream.SendAndClose(&uploaderFileResposne)
+	if err != nil {
+		return status.Errorf(codes.Internal, "response not send")
+	}
+
 	return nil
 }
 

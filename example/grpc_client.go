@@ -193,6 +193,20 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f, module string) error {
 	}
 
 	fmt.Println("File uploaded successfully", res.GetStatus(), res.GetMessage(), res.GetSize())
+
+	csvFile, err := os.Create("uploadererror.csv")
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+	defer csvFile.Close()
+
+	csvwriter := csv.NewWriter(csvFile)
+
+	for _, errorData := range res.GetErrorRecords() {
+		_ = csvwriter.Write(errorData.GetError())
+	}
+
+	csvwriter.Flush()
 	return nil
 }
 

@@ -11,9 +11,10 @@ type MockUploaderService struct {
 	mock.Mock
 }
 
-func (m *MockUploaderService) SaveBulkdata(ctx context.Context, moduleName string, userID int64, fileData [][]string) error {
-	args := m.Called(ctx, moduleName, userID, fileData)
-	return args.Error(0)
+func (m *MockUploaderService) SaveBulkdata(ctx context.Context, moduleName string, userID int64, fileData [][]string) [][]string {
+	_ = m.Called(ctx, moduleName, userID, fileData)
+	mockresult := make([][]string, 0)
+	return mockresult
 }
 
 type MockXLSXFileService struct {

@@ -17,6 +17,11 @@ message UploadFileResponse{
     string message =1;
     uint32 status =2;
     uint32 size =3; 
+    repeated ErrorRecords error_records=4;
+}
+
+message ErrorRecords {
+    repeated string error = 1;
 }
 
 service UploadService {
