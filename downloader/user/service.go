@@ -35,11 +35,11 @@ func createPrimaryUserData(ctx context.Context, ResourceableID, totalEmployeeCou
 	strResourceableID := strconv.FormatUint(ResourceableID, 10)
 	primaryUserDetails = make([][]string, 0)
 
-	headers := []string{"name", "email", "mobile_number", "is_active", "role_id", " resourceable_id", " resourceable_type"}
+	headers := []string{"name", "email", "mobile_number", "is_active", "role_id", "resourceable_id", "resourceable_type"}
 	primaryUserDetails = append(primaryUserDetails, headers)
 
 	for empCount := uint64(0); empCount < totalEmployeeCount; empCount++ {
-		user := []string{"", "", "", "true", USER_ROLL_ID, strResourceableID, USER_RESOURCEABLE_TYPE}
+		user := []string{" ", " ", " ", "true", USER_ROLL_ID, strResourceableID, USER_RESOURCEABLE_TYPE}
 		primaryUserDetails = append(primaryUserDetails, user)
 	}
 

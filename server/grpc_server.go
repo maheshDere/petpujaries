@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"petpujaris/config"
+	"petpujaris/downloader"
+	"petpujaris/downloader/user"
 	"petpujaris/email"
 	"petpujaris/filemanager"
 	"petpujaris/logger"
@@ -48,8 +50,15 @@ func (gc GRPC) Start() error {
 	uploaderService := uploader.NewUploaderService(workerPool)
 	uploaderHandler := uploader.NewUploaderHandler(uploaderService, fileService)
 
+	downloaderService := user.NewUserFileService(userRegistry)
+	fileHandler := user.NewFileHandler(downloaderService)
+
 	Server := grpc.NewServer()
+
 	uploader.RegisterUploadServiceServer(Server, uploaderHandler)
+
+	downloader.RegisterDownloadServiceServer(Server, fileHandler)
+
 	logger.LogInfo(logrus.Fields{"Port": gc.Port}, "Server started")
 
 	l, err := net.Listen("tcp", gc.getGRPCPort())

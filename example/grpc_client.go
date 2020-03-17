@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"petpujaris/downloader"
 	"petpujaris/uploader"
 
 	"google.golang.org/grpc"
@@ -26,6 +27,13 @@ func main() {
 		fmt.Println(err)
 	}
 
+	/* downloaderClient := downloader.NewDownloadServiceClient(conn)
+	gdc := NewGRPCDownloaderClient(downloaderClient)
+	gdc.DownloadUserPrimarydata(context.Background()) */
+}
+
+type GRPCDownloaderClient struct {
+	Client downloader.DownloadServiceClient
 }
 
 type GRPCClient struct {
@@ -33,9 +41,28 @@ type GRPCClient struct {
 	ChunkSize int
 }
 
+func NewGRPCDownloaderClient(cc downloader.DownloadServiceClient) *GRPCDownloaderClient {
+	return &GRPCDownloaderClient{cc}
+}
+
 func NewGRPCClient(cc uploader.UploadServiceClient) *GRPCClient {
 	return &GRPCClient{cc, 1024}
+}
 
+func (gdc *GRPCDownloaderClient) DownloadUserPrimarydata(ctx context.Context) {
+	var req downloader.EmployeeFileDownloadRequest
+	req.AdminID = uint64(7)
+	req.TotalEmployeeCount = uint64(4)
+	response, err := gdc.Client.DownloadEmployeeFileData(ctx, &req)
+	if err != nil {
+		fmt.Println("error :", err)
+	}
+	for _, userData := range response.EmployeeDetails {
+		for _, userinfo := range userData.EmployeeData {
+			fmt.Printf("%v  ", userinfo)
+		}
+		fmt.Printf("\n")
+	}
 }
 
 func (gc *GRPCClient) UploadFile(ctx context.Context, f string) error {
