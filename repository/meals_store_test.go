@@ -41,6 +41,7 @@ func TestMealsRegistry_Save(t *testing.T) {
 			CreatedAt:           time.Now(),
 			UpdatedAt:           time.Now(),
 		}
+
 		id, err := mealRegistry.Save(context.Background(), mealRecord)
 		t.Run("it should not return an error", func(t *testing.T) {
 			assert.NoError(t, err)
