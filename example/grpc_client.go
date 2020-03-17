@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
@@ -117,16 +118,23 @@ func (gdc *GRPCDownloaderClient) DownloadUserPrimarydata(ctx context.Context) {
 	var req downloader.EmployeeFileDownloadRequest
 	req.AdminID = uint64(7)
 	req.TotalEmployeeCount = uint64(4)
+
+	csvFile, err := os.Create("employee_details.csv")
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+	defer csvFile.Close()
+
+	csvwriter := csv.NewWriter(csvFile)
+
 	response, err := gdc.Client.DownloadEmployeeFileData(ctx, &req)
 	if err != nil {
 		fmt.Println("error :", err)
 	}
 	for _, userData := range response.EmployeeDetails {
-		for _, userinfo := range userData.EmployeeData {
-			fmt.Printf("%v  ", userinfo)
-		}
-		fmt.Printf("\n")
+		_ = csvwriter.Write(userData.EmployeeData)
 	}
+	csvwriter.Flush()
 }
 
 func (gc *GRPCClient) UploadFile(ctx context.Context, f, module string) error {
