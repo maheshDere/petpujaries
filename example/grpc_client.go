@@ -20,6 +20,7 @@ func main() {
 
 	client := uploader.NewUploadServiceClient(conn)
 	gc := NewGRPCClient(client)
+
 	err = gc.UploadFile(context.Background(), "SampleMealSchedulerUpload.csv") //example file: AusVSIndMatch.csv //Restaurant Meal Upload.xlsx
 	if err != nil {
 		fmt.Println(err)
