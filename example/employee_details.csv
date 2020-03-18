@@ -1,5 +1,5 @@
-name,email,mobile_number,is_active,role_id,resourceable_id,resourceable_type
-" "," "," ",true,1,1,Company
-" "," "," ",true,1,1,Company
-" "," "," ",true,1,1,Company
-" "," "," ",true,1,1,Company
+name,email,mobile_number,is_active,role_id,resourceable_id
+ , , ,true,1,1
+ , , ,true,1,1
+ , , ,true,1,1
+ , , ,true,1,1
