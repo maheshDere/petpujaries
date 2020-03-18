@@ -97,3 +97,24 @@ func TestMealsRegistry_SaveMealsIngredients(t *testing.T) {
 		})
 	})
 }
+
+func TestMealsRegistry_GetMealType(t *testing.T) {
+	t.Run("Get MealsType records", func(t *testing.T) {
+		mealsTypes, err := mealRegistry.GetMealType(context.Background())
+		t.Run("it should not return an error", func(t *testing.T) {
+			assert.NoError(t, err)
+			assert.NotEmpty(t, mealsTypes)
+		})
+	})
+}
+
+func TestMealsRegistry_GetRestaurantCuisine(t *testing.T) {
+	t.Run("Get MealsType records", func(t *testing.T) {
+		restaurantID := 2
+		restaurantCuisine, err := mealRegistry.GetRestaurantCuisine(context.Background(), int64(restaurantID))
+		t.Run("it should not return an error", func(t *testing.T) {
+			assert.NoError(t, err)
+			assert.NotEmpty(t, restaurantCuisine)
+		})
+	})
+}

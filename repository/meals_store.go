@@ -62,6 +62,45 @@ func (mr mealsRegistry) Delete(ctx context.Context, MealID int64) {
 	mr.client.Exec(ctx, DeleteMealsQuery, MealID)
 
 }
+
+func (mr mealsRegistry) GetMealType(ctx context.Context) ([]models.MealTypes, error) {
+	var mealTypes []models.MealTypes
+	rows, err := mr.client.Query(ctx, GetMealTypeQuery)
+	if err != nil {
+		return mealTypes, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var mealType models.MealTypes
+		if err := rows.Scan(&mealType.ID, &mealType.Name, &mealType.CreatedAt, &mealType.UpdatedAt); err != nil {
+			return mealTypes, err
+		}
+		mealTypes = append(mealTypes, mealType)
+	}
+
+	return mealTypes, nil
+}
+
+func (mr mealsRegistry) GetRestaurantCuisine(ctx context.Context, restaurantID int64) ([]models.RestaurantCuisine, error) {
+	var restaurantCuisines []models.RestaurantCuisine
+	rows, err := mr.client.Query(ctx, GetRestaurantCuisineQuery, restaurantID)
+	if err != nil {
+		return restaurantCuisines, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var restaurantCuisine models.RestaurantCuisine
+		if err := rows.Scan(&restaurantCuisine.RestaurantCuisineID, &restaurantCuisine.CuisineName); err != nil {
+			return restaurantCuisines, err
+		}
+		restaurantCuisines = append(restaurantCuisines, restaurantCuisine)
+	}
+
+	return restaurantCuisines, nil
+}
+
 func NewMealsRegistry(pg Client) MealRegistry {
 	return mealsRegistry{client: pg}
 }
