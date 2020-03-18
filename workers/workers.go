@@ -295,10 +295,10 @@ func parseMealRecord(t []string) (models.Meals, []string) {
 }
 
 func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog) {
-	var errorRecord []string
 	var err error
 	for task := range tasks {
 		wg.Done()
+		var errorRecord []string
 		user, errs := parseUser(task)
 		if len(errs) != 0 {
 			errorRecord = append(errorRecord, task...)
@@ -309,9 +309,8 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 
 		err = user.Validate()
 		if err != nil {
-			errs = append(errs, fmt.Sprintf("Invalide user details for user %v", user.Name))
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
+			errorRecord = append(errorRecord, err.Error())
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
@@ -319,9 +318,8 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 		key := utils.RandomString()
 		user.Password, err = user.GenerateHashedPassword(key)
 		if err != nil {
-			errs = append(errs, fmt.Sprintf("fail to generate password for user %v", user.Name))
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
+			errorRecord = append(errorRecord, err.Error())
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
