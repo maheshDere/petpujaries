@@ -71,7 +71,7 @@ func main() {
 			},
 		},
 		{
-			Name:  "download_user__upload_data_template",
+			Name:  "download_user_upload_data_template",
 			Usage: "get primary users data to generate user uploadation csv file",
 			Action: func(c *cli.Context) error {
 				err := DownloadUserTemplateData()
@@ -136,6 +136,7 @@ func (gdc *GRPCDownloaderClient) DownloadUserPrimarydata(ctx context.Context) {
 	response, err := gdc.Client.DownloadEmployeeFileData(ctx, &req)
 	if err != nil {
 		fmt.Println("error :", err)
+		return
 	}
 	for _, userData := range response.EmployeeDetails {
 		_ = csvwriter.Write(userData.EmployeeData)
