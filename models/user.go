@@ -33,7 +33,7 @@ func (u *User) GenerateHashedPassword(key string) (hashedPassword string, err er
 }
 
 func (u *User) Validate() error {
-	if u.Name != "" || u.Email != "" || u.MobileNumber != "" || u.RoleID < 0 || u.ResourceableID < 0 || u.ResourceableType != "" {
+	if u.Name != "" && u.Email != "" && u.MobileNumber != "" && u.RoleID < 0 && u.ResourceableID < 0 && u.ResourceableType != "" {
 		return nil
 	}
 	return errors.New("Invalide user details")
