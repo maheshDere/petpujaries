@@ -6,12 +6,11 @@ package downloader
 import (
 	context "context"
 	fmt "fmt"
-	math "math"
-
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -150,32 +149,282 @@ func (m *EmployeeData) GetEmployeeData() []string {
 	return nil
 }
 
+type MealFileDownloadRequest struct {
+	RestaurantID         uint64   `protobuf:"varint,1,opt,name=restaurantID,proto3" json:"restaurantID,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MealFileDownloadRequest) Reset()         { *m = MealFileDownloadRequest{} }
+func (m *MealFileDownloadRequest) String() string { return proto.CompactTextString(m) }
+func (*MealFileDownloadRequest) ProtoMessage()    {}
+func (*MealFileDownloadRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6a99ec95c7ab1ff1, []int{3}
+}
+
+func (m *MealFileDownloadRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MealFileDownloadRequest.Unmarshal(m, b)
+}
+func (m *MealFileDownloadRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MealFileDownloadRequest.Marshal(b, m, deterministic)
+}
+func (m *MealFileDownloadRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MealFileDownloadRequest.Merge(m, src)
+}
+func (m *MealFileDownloadRequest) XXX_Size() int {
+	return xxx_messageInfo_MealFileDownloadRequest.Size(m)
+}
+func (m *MealFileDownloadRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_MealFileDownloadRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MealFileDownloadRequest proto.InternalMessageInfo
+
+func (m *MealFileDownloadRequest) GetRestaurantID() uint64 {
+	if m != nil {
+		return m.RestaurantID
+	}
+	return 0
+}
+
+type MealFileDownloadResponse struct {
+	MealDetails          []*MealData `protobuf:"bytes,2,rep,name=meal_details,json=mealDetails,proto3" json:"meal_details,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
+}
+
+func (m *MealFileDownloadResponse) Reset()         { *m = MealFileDownloadResponse{} }
+func (m *MealFileDownloadResponse) String() string { return proto.CompactTextString(m) }
+func (*MealFileDownloadResponse) ProtoMessage()    {}
+func (*MealFileDownloadResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6a99ec95c7ab1ff1, []int{4}
+}
+
+func (m *MealFileDownloadResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MealFileDownloadResponse.Unmarshal(m, b)
+}
+func (m *MealFileDownloadResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MealFileDownloadResponse.Marshal(b, m, deterministic)
+}
+func (m *MealFileDownloadResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MealFileDownloadResponse.Merge(m, src)
+}
+func (m *MealFileDownloadResponse) XXX_Size() int {
+	return xxx_messageInfo_MealFileDownloadResponse.Size(m)
+}
+func (m *MealFileDownloadResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MealFileDownloadResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MealFileDownloadResponse proto.InternalMessageInfo
+
+func (m *MealFileDownloadResponse) GetMealDetails() []*MealData {
+	if m != nil {
+		return m.MealDetails
+	}
+	return nil
+}
+
+type MealData struct {
+	MealData             []string `protobuf:"bytes,1,rep,name=meal_data,json=mealData,proto3" json:"meal_data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MealData) Reset()         { *m = MealData{} }
+func (m *MealData) String() string { return proto.CompactTextString(m) }
+func (*MealData) ProtoMessage()    {}
+func (*MealData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6a99ec95c7ab1ff1, []int{5}
+}
+
+func (m *MealData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MealData.Unmarshal(m, b)
+}
+func (m *MealData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MealData.Marshal(b, m, deterministic)
+}
+func (m *MealData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MealData.Merge(m, src)
+}
+func (m *MealData) XXX_Size() int {
+	return xxx_messageInfo_MealData.Size(m)
+}
+func (m *MealData) XXX_DiscardUnknown() {
+	xxx_messageInfo_MealData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MealData proto.InternalMessageInfo
+
+func (m *MealData) GetMealData() []string {
+	if m != nil {
+		return m.MealData
+	}
+	return nil
+}
+
+type MealSchedulerFileDownloadRequest struct {
+	RestaurantID         uint64   `protobuf:"varint,1,opt,name=restaurantID,proto3" json:"restaurantID,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MealSchedulerFileDownloadRequest) Reset()         { *m = MealSchedulerFileDownloadRequest{} }
+func (m *MealSchedulerFileDownloadRequest) String() string { return proto.CompactTextString(m) }
+func (*MealSchedulerFileDownloadRequest) ProtoMessage()    {}
+func (*MealSchedulerFileDownloadRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6a99ec95c7ab1ff1, []int{6}
+}
+
+func (m *MealSchedulerFileDownloadRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MealSchedulerFileDownloadRequest.Unmarshal(m, b)
+}
+func (m *MealSchedulerFileDownloadRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MealSchedulerFileDownloadRequest.Marshal(b, m, deterministic)
+}
+func (m *MealSchedulerFileDownloadRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MealSchedulerFileDownloadRequest.Merge(m, src)
+}
+func (m *MealSchedulerFileDownloadRequest) XXX_Size() int {
+	return xxx_messageInfo_MealSchedulerFileDownloadRequest.Size(m)
+}
+func (m *MealSchedulerFileDownloadRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_MealSchedulerFileDownloadRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MealSchedulerFileDownloadRequest proto.InternalMessageInfo
+
+func (m *MealSchedulerFileDownloadRequest) GetRestaurantID() uint64 {
+	if m != nil {
+		return m.RestaurantID
+	}
+	return 0
+}
+
+type MealSchedulerFileDownloadResponse struct {
+	SchedulerDetails     []*MealSchedulerData `protobuf:"bytes,2,rep,name=scheduler_details,json=schedulerDetails,proto3" json:"scheduler_details,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *MealSchedulerFileDownloadResponse) Reset()         { *m = MealSchedulerFileDownloadResponse{} }
+func (m *MealSchedulerFileDownloadResponse) String() string { return proto.CompactTextString(m) }
+func (*MealSchedulerFileDownloadResponse) ProtoMessage()    {}
+func (*MealSchedulerFileDownloadResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6a99ec95c7ab1ff1, []int{7}
+}
+
+func (m *MealSchedulerFileDownloadResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MealSchedulerFileDownloadResponse.Unmarshal(m, b)
+}
+func (m *MealSchedulerFileDownloadResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MealSchedulerFileDownloadResponse.Marshal(b, m, deterministic)
+}
+func (m *MealSchedulerFileDownloadResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MealSchedulerFileDownloadResponse.Merge(m, src)
+}
+func (m *MealSchedulerFileDownloadResponse) XXX_Size() int {
+	return xxx_messageInfo_MealSchedulerFileDownloadResponse.Size(m)
+}
+func (m *MealSchedulerFileDownloadResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MealSchedulerFileDownloadResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MealSchedulerFileDownloadResponse proto.InternalMessageInfo
+
+func (m *MealSchedulerFileDownloadResponse) GetSchedulerDetails() []*MealSchedulerData {
+	if m != nil {
+		return m.SchedulerDetails
+	}
+	return nil
+}
+
+type MealSchedulerData struct {
+	SchedulerData        []string `protobuf:"bytes,1,rep,name=scheduler_data,json=schedulerData,proto3" json:"scheduler_data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MealSchedulerData) Reset()         { *m = MealSchedulerData{} }
+func (m *MealSchedulerData) String() string { return proto.CompactTextString(m) }
+func (*MealSchedulerData) ProtoMessage()    {}
+func (*MealSchedulerData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6a99ec95c7ab1ff1, []int{8}
+}
+
+func (m *MealSchedulerData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MealSchedulerData.Unmarshal(m, b)
+}
+func (m *MealSchedulerData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MealSchedulerData.Marshal(b, m, deterministic)
+}
+func (m *MealSchedulerData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MealSchedulerData.Merge(m, src)
+}
+func (m *MealSchedulerData) XXX_Size() int {
+	return xxx_messageInfo_MealSchedulerData.Size(m)
+}
+func (m *MealSchedulerData) XXX_DiscardUnknown() {
+	xxx_messageInfo_MealSchedulerData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MealSchedulerData proto.InternalMessageInfo
+
+func (m *MealSchedulerData) GetSchedulerData() []string {
+	if m != nil {
+		return m.SchedulerData
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*EmployeeFileDownloadRequest)(nil), "downloader.EmployeeFileDownloadRequest")
 	proto.RegisterType((*EmployeeFileDownloadResponse)(nil), "downloader.EmployeeFileDownloadResponse")
 	proto.RegisterType((*EmployeeData)(nil), "downloader.EmployeeData")
+	proto.RegisterType((*MealFileDownloadRequest)(nil), "downloader.MealFileDownloadRequest")
+	proto.RegisterType((*MealFileDownloadResponse)(nil), "downloader.MealFileDownloadResponse")
+	proto.RegisterType((*MealData)(nil), "downloader.MealData")
+	proto.RegisterType((*MealSchedulerFileDownloadRequest)(nil), "downloader.MealSchedulerFileDownloadRequest")
+	proto.RegisterType((*MealSchedulerFileDownloadResponse)(nil), "downloader.MealSchedulerFileDownloadResponse")
+	proto.RegisterType((*MealSchedulerData)(nil), "downloader.MealSchedulerData")
 }
 
 func init() { proto.RegisterFile("downloader.proto", fileDescriptor_6a99ec95c7ab1ff1) }
 
 var fileDescriptor_6a99ec95c7ab1ff1 = []byte{
-	// 241 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x91, 0x41, 0x4b, 0x03, 0x31,
-	0x10, 0x85, 0xdd, 0x56, 0x14, 0xc7, 0x4a, 0x4b, 0xf0, 0x10, 0xd4, 0xc3, 0xb2, 0x1e, 0xdc, 0x53,
-	0x91, 0xf6, 0x27, 0x74, 0x15, 0xbc, 0xc6, 0x1f, 0x50, 0xc6, 0xcd, 0x1c, 0x02, 0x69, 0x66, 0xdd,
-	0x4c, 0x15, 0xaf, 0xfe, 0x72, 0xe9, 0xb6, 0xb1, 0x2b, 0x2c, 0x78, 0xcc, 0xbc, 0xf7, 0xbe, 0xbc,
-	0x49, 0x60, 0x66, 0xf9, 0x33, 0x78, 0x46, 0x4b, 0xed, 0xbc, 0x69, 0x59, 0x58, 0xc1, 0x71, 0x52,
-	0x38, 0xb8, 0x7d, 0xda, 0x34, 0x9e, 0xbf, 0x88, 0x9e, 0x9d, 0xa7, 0xea, 0xa0, 0x18, 0x7a, 0xdf,
-	0x52, 0x14, 0xa5, 0xe1, 0x1c, 0xed, 0xc6, 0x85, 0x97, 0x4a, 0x67, 0x79, 0x56, 0x9e, 0x9a, 0x74,
-	0x54, 0x8f, 0x70, 0x2d, 0x2c, 0xe8, 0xd7, 0x74, 0x88, 0xaf, 0x6b, 0xde, 0x06, 0xd1, 0xa3, 0xce,
-	0xa6, 0x3a, 0x2d, 0x91, 0x57, 0x3b, 0xa5, 0xa8, 0xe1, 0x6e, 0xf8, 0xaa, 0xd8, 0x70, 0x88, 0xa4,
-	0x56, 0x30, 0xfb, 0x65, 0x59, 0x12, 0x74, 0x3e, 0xea, 0x51, 0x3e, 0x2e, 0x2f, 0x17, 0x7a, 0xde,
-	0xdb, 0x21, 0x31, 0x2a, 0x14, 0x34, 0xd3, 0x94, 0xa8, 0xf6, 0x81, 0x62, 0x09, 0x93, 0xbe, 0x41,
-	0xdd, 0xc3, 0xd5, 0x11, 0x8a, 0x82, 0x3a, 0xcb, 0xc7, 0xe5, 0x85, 0x99, 0x50, 0xcf, 0xb4, 0xf8,
-	0xce, 0x60, 0x9a, 0xea, 0xbc, 0x52, 0xfb, 0xe1, 0x6a, 0x52, 0x0c, 0x3a, 0x8d, 0xfe, 0xb4, 0xde,
-	0x41, 0x1f, 0x86, 0xfa, 0x0c, 0x3c, 0xdf, 0x4d, 0xf9, 0xbf, 0x71, 0xbf, 0x7c, 0x71, 0xf2, 0x76,
-	0xd6, 0x7d, 0xce, 0xf2, 0x27, 0x00, 0x00, 0xff, 0xff, 0xf6, 0x83, 0xfb, 0x63, 0xb0, 0x01, 0x00,
-	0x00,
+	// 407 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x94, 0x51, 0x8b, 0xda, 0x40,
+	0x10, 0xc7, 0xab, 0x96, 0x56, 0xc7, 0x58, 0x75, 0x11, 0xba, 0xd4, 0x0a, 0xe9, 0xb6, 0xc5, 0x3c,
+	0xb4, 0x52, 0xf4, 0xa1, 0x50, 0xe8, 0x93, 0xa9, 0xd0, 0x42, 0x5f, 0xe2, 0x07, 0x90, 0xbd, 0x64,
+	0xe0, 0x02, 0x9b, 0xac, 0x97, 0x6c, 0xee, 0xb8, 0x97, 0xfb, 0xba, 0xf7, 0x35, 0x8e, 0xc4, 0x6c,
+	0x12, 0x63, 0xce, 0x3b, 0xee, 0xd1, 0x99, 0xff, 0xfc, 0xff, 0xfe, 0x66, 0x87, 0xc0, 0xc8, 0x93,
+	0x37, 0xa1, 0x90, 0xdc, 0xc3, 0x68, 0xb1, 0x8f, 0xa4, 0x92, 0x04, 0xca, 0x0a, 0xf3, 0x61, 0xfa,
+	0x27, 0xd8, 0x0b, 0x79, 0x8b, 0xb8, 0xf1, 0x05, 0xda, 0x79, 0xc7, 0xc1, 0xab, 0x04, 0x63, 0x45,
+	0x28, 0xbc, 0xe5, 0x5e, 0xe0, 0x87, 0x7f, 0x6d, 0xda, 0x32, 0x5b, 0xd6, 0x6b, 0x47, 0xff, 0x24,
+	0x3f, 0x60, 0xa2, 0xa4, 0xe2, 0x62, 0x87, 0xf9, 0xf8, 0xce, 0x95, 0x49, 0xa8, 0x68, 0x3b, 0x93,
+	0x91, 0xac, 0xa7, 0x9d, 0xd7, 0x69, 0x87, 0xb9, 0xf0, 0xb1, 0x39, 0x2a, 0xde, 0xcb, 0x30, 0x46,
+	0xb2, 0x86, 0x51, 0xe1, 0xe5, 0xa1, 0xe2, 0xbe, 0x88, 0x69, 0xdb, 0xec, 0x58, 0xfd, 0x25, 0x5d,
+	0x54, 0x18, 0xb4, 0x87, 0xcd, 0x15, 0x77, 0x86, 0x7a, 0xc2, 0x3e, 0x0c, 0xb0, 0x15, 0x18, 0x55,
+	0x01, 0xf9, 0x0c, 0x83, 0xd2, 0x94, 0x2b, 0x4e, 0x5b, 0x66, 0xc7, 0xea, 0x39, 0x06, 0x56, 0x44,
+	0xec, 0x37, 0xbc, 0xff, 0x8f, 0x5c, 0x34, 0x2d, 0x80, 0x81, 0x11, 0x61, 0xac, 0x78, 0x12, 0xf1,
+	0x50, 0x15, 0x5b, 0x38, 0xaa, 0xb1, 0x2d, 0xd0, 0xd3, 0xf1, 0x1c, 0xea, 0x27, 0x18, 0x01, 0x72,
+	0x51, 0x03, 0x9a, 0x54, 0x81, 0xd2, 0xd9, 0x0c, 0xa6, 0x9f, 0x2a, 0x35, 0xc8, 0x1c, 0xba, 0xba,
+	0x41, 0xa6, 0xd0, 0x3b, 0x98, 0x94, 0x00, 0xdd, 0x20, 0x6f, 0xb2, 0x0d, 0x98, 0xa9, 0x70, 0xeb,
+	0x5e, 0xa2, 0x97, 0x08, 0x8c, 0x5e, 0x4a, 0x21, 0xe1, 0xd3, 0x19, 0x9f, 0x1c, 0xe7, 0x1f, 0x8c,
+	0x63, 0x2d, 0xa8, 0x31, 0xcd, 0xea, 0x4c, 0x85, 0x53, 0x06, 0x37, 0x2a, 0xe6, 0x34, 0xe1, 0x2f,
+	0x18, 0x9f, 0xc8, 0xc8, 0x57, 0x78, 0x57, 0x09, 0x28, 0x79, 0x07, 0x71, 0x55, 0xb6, 0xbc, 0x6f,
+	0xc3, 0x50, 0xff, 0xb9, 0x2d, 0x46, 0xd7, 0xbe, 0x8b, 0x44, 0x02, 0xd5, 0xa5, 0xa3, 0x3b, 0x4b,
+	0x6d, 0xe7, 0x4d, 0x17, 0xd4, 0xb0, 0xa9, 0x0f, 0xd6, 0xd3, 0xc2, 0xc3, 0x2a, 0xd8, 0x2b, 0xe2,
+	0xc2, 0x44, 0x57, 0x8b, 0xf7, 0xcf, 0x6e, 0xae, 0xbe, 0x89, 0xa6, 0xa0, 0x2f, 0xe7, 0x45, 0x45,
+	0xc8, 0x1d, 0xcc, 0xaa, 0x21, 0xc7, 0xcf, 0x93, 0xa6, 0x7d, 0x7b, 0x74, 0xef, 0x4d, 0xb1, 0xdf,
+	0x9f, 0xa9, 0xd6, 0xf9, 0x17, 0x6f, 0xb2, 0x6f, 0xc6, 0xea, 0x21, 0x00, 0x00, 0xff, 0xff, 0x35,
+	0x5c, 0x3f, 0x47, 0x47, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -191,6 +440,8 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type DownloadServiceClient interface {
 	DownloadEmployeeFileData(ctx context.Context, in *EmployeeFileDownloadRequest, opts ...grpc.CallOption) (*EmployeeFileDownloadResponse, error)
+	DownloadMealFileData(ctx context.Context, in *MealFileDownloadRequest, opts ...grpc.CallOption) (*MealFileDownloadResponse, error)
+	DownloadMealSchedulerFileData(ctx context.Context, in *MealSchedulerFileDownloadRequest, opts ...grpc.CallOption) (*MealSchedulerFileDownloadResponse, error)
 }
 
 type downloadServiceClient struct {
@@ -210,9 +461,29 @@ func (c *downloadServiceClient) DownloadEmployeeFileData(ctx context.Context, in
 	return out, nil
 }
 
+func (c *downloadServiceClient) DownloadMealFileData(ctx context.Context, in *MealFileDownloadRequest, opts ...grpc.CallOption) (*MealFileDownloadResponse, error) {
+	out := new(MealFileDownloadResponse)
+	err := c.cc.Invoke(ctx, "/downloader.DownloadService/DownloadMealFileData", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *downloadServiceClient) DownloadMealSchedulerFileData(ctx context.Context, in *MealSchedulerFileDownloadRequest, opts ...grpc.CallOption) (*MealSchedulerFileDownloadResponse, error) {
+	out := new(MealSchedulerFileDownloadResponse)
+	err := c.cc.Invoke(ctx, "/downloader.DownloadService/DownloadMealSchedulerFileData", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DownloadServiceServer is the server API for DownloadService service.
 type DownloadServiceServer interface {
 	DownloadEmployeeFileData(context.Context, *EmployeeFileDownloadRequest) (*EmployeeFileDownloadResponse, error)
+	DownloadMealFileData(context.Context, *MealFileDownloadRequest) (*MealFileDownloadResponse, error)
+	DownloadMealSchedulerFileData(context.Context, *MealSchedulerFileDownloadRequest) (*MealSchedulerFileDownloadResponse, error)
 }
 
 // UnimplementedDownloadServiceServer can be embedded to have forward compatible implementations.
@@ -221,6 +492,12 @@ type UnimplementedDownloadServiceServer struct {
 
 func (*UnimplementedDownloadServiceServer) DownloadEmployeeFileData(ctx context.Context, req *EmployeeFileDownloadRequest) (*EmployeeFileDownloadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DownloadEmployeeFileData not implemented")
+}
+func (*UnimplementedDownloadServiceServer) DownloadMealFileData(ctx context.Context, req *MealFileDownloadRequest) (*MealFileDownloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DownloadMealFileData not implemented")
+}
+func (*UnimplementedDownloadServiceServer) DownloadMealSchedulerFileData(ctx context.Context, req *MealSchedulerFileDownloadRequest) (*MealSchedulerFileDownloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DownloadMealSchedulerFileData not implemented")
 }
 
 func RegisterDownloadServiceServer(s *grpc.Server, srv DownloadServiceServer) {
@@ -245,6 +522,42 @@ func _DownloadService_DownloadEmployeeFileData_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DownloadService_DownloadMealFileData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MealFileDownloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DownloadServiceServer).DownloadMealFileData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/downloader.DownloadService/DownloadMealFileData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DownloadServiceServer).DownloadMealFileData(ctx, req.(*MealFileDownloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DownloadService_DownloadMealSchedulerFileData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MealSchedulerFileDownloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DownloadServiceServer).DownloadMealSchedulerFileData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/downloader.DownloadService/DownloadMealSchedulerFileData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DownloadServiceServer).DownloadMealSchedulerFileData(ctx, req.(*MealSchedulerFileDownloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _DownloadService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "downloader.DownloadService",
 	HandlerType: (*DownloadServiceServer)(nil),
@@ -252,6 +565,14 @@ var _DownloadService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DownloadEmployeeFileData",
 			Handler:    _DownloadService_DownloadEmployeeFileData_Handler,
+		},
+		{
+			MethodName: "DownloadMealFileData",
+			Handler:    _DownloadService_DownloadMealFileData_Handler,
+		},
+		{
+			MethodName: "DownloadMealSchedulerFileData",
+			Handler:    _DownloadService_DownloadMealSchedulerFileData_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -14,7 +14,32 @@ message EmployeeData {
     repeated string employee_data = 1;
 }
 
+message MealFileDownloadRequest {
+    uint64 restaurantID =1;
+}
+
+message MealFileDownloadResponse{
+    repeated MealData meal_details = 2;
+}
+
+message MealData {
+    repeated string meal_data = 1;
+}
+
+message MealSchedulerFileDownloadRequest {
+    uint64 restaurantID =1;
+}
+
+message MealSchedulerFileDownloadResponse{
+    repeated MealSchedulerData scheduler_details = 2;
+}
+
+message MealSchedulerData {
+    repeated string scheduler_data = 1;
+}
 
 service DownloadService {
     rpc DownloadEmployeeFileData(EmployeeFileDownloadRequest) returns (EmployeeFileDownloadResponse) { }
+    rpc DownloadMealFileData(MealFileDownloadRequest) returns (MealFileDownloadResponse) { }
+    rpc DownloadMealSchedulerFileData(MealSchedulerFileDownloadRequest) returns (MealSchedulerFileDownloadResponse) { }
 }

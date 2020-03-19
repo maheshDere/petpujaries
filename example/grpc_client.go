@@ -78,6 +78,23 @@ func main() {
 				return err
 			},
 		},
+
+		{
+			Name:  "download_meals_upload_data_template",
+			Usage: "get primary meals data to generate meals uploadation csv file",
+			Action: func(c *cli.Context) error {
+				err := DownloadMealsTemplateData()
+				return err
+			},
+		},
+		{
+			Name:  "download_meals_scheduler_upload_data_template",
+			Usage: "get primary meals scheduler data to generate scheduler uploadation csv file",
+			Action: func(c *cli.Context) error {
+				err := DownloadMealSchedulerTemplateData()
+				return err
+			},
+		},
 	}
 	if err := cliApp.Run(os.Args); err != nil {
 		panic(err)
@@ -120,12 +137,21 @@ func DownloadUserTemplateData() error {
 	return nil
 }
 
+func DownloadMealsTemplateData() error {
+	gdc.DownloadMealsPrimarydata(context.Background())
+	return nil
+}
+func DownloadMealSchedulerTemplateData() error {
+	gdc.DownloadMealShedulerPrimarydata(context.Background())
+	return nil
+}
+
 func (gdc *GRPCDownloaderClient) DownloadUserPrimarydata(ctx context.Context) {
 	var req downloader.EmployeeFileDownloadRequest
 	req.AdminID = uint64(7)
 	req.TotalEmployeeCount = uint64(4)
 
-	csvFile, err := os.Create("employee_details.csv")
+	csvFile, err := os.Create("employee_details_template.csv")
 	if err != nil {
 		log.Fatalf("failed creating file: %s", err)
 	}
@@ -142,6 +168,55 @@ func (gdc *GRPCDownloaderClient) DownloadUserPrimarydata(ctx context.Context) {
 		_ = csvwriter.Write(userData.EmployeeData)
 	}
 	csvwriter.Flush()
+	fmt.Println("File Generate Successfully : employee_details_template.csv")
+}
+
+func (gdc *GRPCDownloaderClient) DownloadMealsPrimarydata(ctx context.Context) {
+	var req downloader.MealFileDownloadRequest
+	req.RestaurantID = uint64(2)
+
+	csvFile, err := os.Create("meals_details_template.csv")
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+	defer csvFile.Close()
+
+	csvwriter := csv.NewWriter(csvFile)
+
+	response, err := gdc.Client.DownloadMealFileData(ctx, &req)
+	if err != nil {
+		fmt.Println("error :", err)
+		return
+	}
+	for _, mealData := range response.GetMealDetails() {
+		_ = csvwriter.Write(mealData.GetMealData())
+	}
+	csvwriter.Flush()
+	fmt.Println("File Generate Successfully : meals_details_template.csv")
+}
+
+func (gdc *GRPCDownloaderClient) DownloadMealShedulerPrimarydata(ctx context.Context) {
+	var req downloader.MealSchedulerFileDownloadRequest
+	req.RestaurantID = uint64(2)
+
+	csvFile, err := os.Create("meals_scheduler_template.csv")
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+	defer csvFile.Close()
+
+	csvwriter := csv.NewWriter(csvFile)
+
+	response, err := gdc.Client.DownloadMealSchedulerFileData(ctx, &req)
+	if err != nil {
+		fmt.Println("error :", err)
+		return
+	}
+	for _, mealSchedulerData := range response.GetSchedulerDetails() {
+		_ = csvwriter.Write(mealSchedulerData.GetSchedulerData())
+	}
+	csvwriter.Flush()
+	fmt.Println("File Generate Successfully : meals_scheduler_template.csv")
 }
 
 func (gc *GRPCClient) UploadFile(ctx context.Context, f, module string) error {
