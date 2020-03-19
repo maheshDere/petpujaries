@@ -101,6 +101,24 @@ func (mr mealsRegistry) GetRestaurantCuisine(ctx context.Context, restaurantID i
 	return restaurantCuisines, nil
 }
 
+func (mr mealsRegistry) GetRestaurantMeals(ctx context.Context, restaurantID int64) ([]models.RestaurantMeal, error) {
+	var restaurantMeals []models.RestaurantMeal
+	rows, err := mr.client.Query(ctx, GetRestaurantMealQuery, restaurantID)
+	if err != nil {
+		return restaurantMeals, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var restaurantMeal models.RestaurantMeal
+		if err := rows.Scan(&restaurantMeal.MealsID, &restaurantMeal.Name); err != nil {
+			return restaurantMeals, err
+		}
+		restaurantMeals = append(restaurantMeals, restaurantMeal)
+	}
+
+	return restaurantMeals, nil
+}
 func NewMealsRegistry(pg Client) MealRegistry {
 	return mealsRegistry{client: pg}
 }

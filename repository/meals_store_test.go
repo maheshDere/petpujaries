@@ -118,3 +118,14 @@ func TestMealsRegistry_GetRestaurantCuisine(t *testing.T) {
 		})
 	})
 }
+
+func TestMealsRegistry_GetRestaurantMeals(t *testing.T) {
+	t.Run("Get Meals records", func(t *testing.T) {
+		restaurantID := 2
+		restaurantMeals, err := mealRegistry.GetRestaurantMeals(context.Background(), int64(restaurantID))
+		t.Run("it should not return an error", func(t *testing.T) {
+			assert.NoError(t, err)
+			assert.NotEmpty(t, restaurantMeals)
+		})
+	})
+}

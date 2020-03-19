@@ -18,6 +18,7 @@ type MealRegistry interface {
 	Delete(ctx context.Context, MealID int64)
 	GetMealType(ctx context.Context) ([]models.MealTypes, error)
 	GetRestaurantCuisine(ctx context.Context, restaurantID int64) ([]models.RestaurantCuisine, error)
+	GetRestaurantMeals(ctx context.Context, restaurantID int64) ([]models.RestaurantMeal, error)
 }
 
 type MealSchedulerRegistry interface {

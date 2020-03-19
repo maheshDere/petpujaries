@@ -2,7 +2,7 @@ package repository
 
 import "fmt"
 
-var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, DeleteMealsQuery, DeleteMealsItemQuery, DeleteMealIngredientsQuery, SaveMealSchedulerQuery, GetResourceableIDQuery, GetMealTypeQuery, GetRestaurantCuisineQuery Command
+var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, DeleteMealsQuery, DeleteMealsItemQuery, DeleteMealIngredientsQuery, SaveMealSchedulerQuery, GetResourceableIDQuery, GetMealTypeQuery, GetRestaurantCuisineQuery, GetRestaurantMealQuery Command
 
 type Command struct {
 	Query       string
@@ -96,5 +96,11 @@ func init() {
 		Table:       "restaurant_cuisines",
 		Description: "FETCH RESTAURANT CUISINES",
 		Query:       "select DISTINCT restaurant_cuisines.id as id, cuisines.name from %s inner join cuisines on restaurant_cuisines.cuisine_id = cuisines.id inner join meals on restaurant_cuisines.id=meals.restaurant_cuisine_id where restaurant_cuisines.restaurant_id=$1",
+	}
+
+	GetRestaurantMealQuery = Command{
+		Table:       "meals",
+		Description: "FETCH MEALS",
+		Query:       "select DISTINCT meals.id as id, meals.name from %s inner join restaurant_cuisines on restaurant_cuisines.id=meals.restaurant_cuisine_id where restaurant_cuisines.restaurant_id=$1",
 	}
 }
