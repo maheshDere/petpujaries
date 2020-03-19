@@ -2,7 +2,7 @@ package repository
 
 import "fmt"
 
-var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, DeleteMealsQuery, DeleteMealsItemQuery, DeleteMealIngredientsQuery, SaveMealSchedulerQuery, GetResourceableIDQuery Command
+var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, DeleteMealsQuery, DeleteMealsItemQuery, DeleteMealIngredientsQuery, SaveMealSchedulerQuery, GetResourceableIDQuery, GetMealTypeQuery, GetRestaurantCuisineQuery, GetRestaurantMealQuery Command
 
 type Command struct {
 	Query       string
@@ -86,4 +86,21 @@ func init() {
 		Query:       "select resourceable_id from %s where id = $1 and role_id = $2 and is_active = true",
 	}
 
+	GetMealTypeQuery = Command{
+		Table:       "meal_types",
+		Description: "FETCH MEALS TYPES",
+		Query:       "select * from %s",
+	}
+
+	GetRestaurantCuisineQuery = Command{
+		Table:       "restaurant_cuisines",
+		Description: "FETCH RESTAURANT CUISINES",
+		Query:       "select DISTINCT restaurant_cuisines.id as id, cuisines.name from %s inner join cuisines on restaurant_cuisines.cuisine_id = cuisines.id inner join meals on restaurant_cuisines.id=meals.restaurant_cuisine_id where restaurant_cuisines.restaurant_id=$1",
+	}
+
+	GetRestaurantMealQuery = Command{
+		Table:       "meals",
+		Description: "FETCH MEALS",
+		Query:       "select DISTINCT meals.id as id, meals.name from %s inner join restaurant_cuisines on restaurant_cuisines.id=meals.restaurant_cuisine_id where restaurant_cuisines.restaurant_id=$1",
+	}
 }

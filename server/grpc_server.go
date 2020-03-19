@@ -6,6 +6,7 @@ import (
 	"net"
 	"petpujaris/config"
 	"petpujaris/downloader"
+	"petpujaris/downloader/meals"
 	"petpujaris/downloader/user"
 	"petpujaris/email"
 	"petpujaris/filemanager"
@@ -51,7 +52,9 @@ func (gc GRPC) Start() error {
 	uploaderHandler := uploader.NewUploaderHandler(uploaderService, fileService)
 
 	downloaderService := user.NewUserFileService(userRegistry)
-	fileHandler := user.NewFileHandler(downloaderService)
+
+	downloaderMealsService := meals.NewMealsFileService(mealRegistry)
+	fileHandler := downloader.NewFileHandler(downloaderService, downloaderMealsService)
 
 	Server := grpc.NewServer()
 

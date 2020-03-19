@@ -16,7 +16,7 @@ import (
 	"github.com/araddon/dateparse"
 )
 
-var mealsSheetHeader = []string{"MealName", "Description", "ImageUrl", "Price", "Calories", "IsActive", "Item", "Ingredients", "meal_type_id", "MealType", "restaurant_cuisine_id", "CuisineName", "Errors"}
+var mealsSheetHeader = []string{"MealName", "Description", "ImageUrl", "Price", "Calories", "IsActive", "Item", "Ingredients", "Meal Type Id", "MealType", "Restaurant Cuisine Id", "CuisineName", "Errors"}
 var schedulerSheetHeader = []string{"MealID", "MealName", "Date", "Errors"}
 var employeeSheetHeader = []string{"name", "email", "mobile_number", "is_active", "role_id", "resourceable_id", "resourceable_type", "Errors"}
 

@@ -51,6 +51,23 @@ type MealScheduler struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
+type MealTypes struct {
+	ID        int64     `db:"id"`
+	Name      string    `db:"name"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
+type RestaurantCuisine struct {
+	RestaurantCuisineID int64  `db:"id"`
+	CuisineName         string `db:"name"`
+}
+
+type RestaurantMeal struct {
+	MealsID int64  `db:"id"`
+	Name    string `db:"name"`
+}
+
 func (m Meals) Validation() error {
 	if m.Name != "" && m.Description != "" && m.Price != 0 && m.Calories != 0 && m.MealTypeID != 0 && m.RestaurantCuisineID != 0 {
 		return nil
