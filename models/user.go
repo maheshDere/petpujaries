@@ -16,7 +16,7 @@ type User struct {
 	IsActive         bool      `db:"is_active"`
 	Password         string    `db:"password_digest"`
 	RoleID           int       `db:"role_id"`
-	ResourceableID   int       `db:"resourceable_id"`
+	ResourceableID   uint64    `db:"resourceable_id"`
 	ResourceableType string    `db:"resourceable_type"`
 	CreatedAt        time.Time `db:"created_at"`
 	UpdatedAt        time.Time `db:"updated_at"`

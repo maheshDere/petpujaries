@@ -104,7 +104,8 @@ func main() {
 
 func uploadUsersData(fileName string) error {
 	module := "employee"
-	err := gc.UploadFile(context.Background(), fileName, module)
+	userID := int64(29)
+	err := gc.UploadFile(context.Background(), fileName, module, userID)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -114,7 +115,8 @@ func uploadUsersData(fileName string) error {
 
 func uploadMealData(fileName string) error {
 	moduleName := "meal"
-	err := gc.UploadFile(context.Background(), fileName, moduleName)
+	userID := int64(1)
+	err := gc.UploadFile(context.Background(), fileName, moduleName, userID)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -124,7 +126,8 @@ func uploadMealData(fileName string) error {
 
 func uploadMealSchedulerData(fileName string) error {
 	moduleName := "mealscheduler"
-	err := gc.UploadFile(context.Background(), fileName, moduleName)
+	userID := int64(1)
+	err := gc.UploadFile(context.Background(), fileName, moduleName, userID)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -219,7 +222,7 @@ func (gdc *GRPCDownloaderClient) DownloadMealShedulerPrimarydata(ctx context.Con
 	fmt.Println("File Generate Successfully : meals_scheduler_template.csv")
 }
 
-func (gc *GRPCClient) UploadFile(ctx context.Context, f, module string) error {
+func (gc *GRPCClient) UploadFile(ctx context.Context, f, module string, userID int64) error {
 	file, err := os.Open(f)
 	if err != nil {
 		return fmt.Errorf("File not open %v", err)
@@ -232,7 +235,7 @@ func (gc *GRPCClient) UploadFile(ctx context.Context, f, module string) error {
 	}
 
 	err = stream.Send(&uploader.UploadFileRequest{
-		Data: &uploader.UploadFileRequest_Info{&uploader.FileInfo{Modulename: module, Userid: 1}},
+		Data: &uploader.UploadFileRequest_Info{&uploader.FileInfo{Modulename: module, Userid: userID}},
 	})
 
 	if err != nil {
