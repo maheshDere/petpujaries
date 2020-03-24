@@ -4,10 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"petpujaris/logger"
+	"regexp"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+var MOBILE_NUMBER_REGEX = regexp.MustCompile("^(?:(?:\\+|0{0,2})91(\\s*[\\-]\\s*)?|[0]?)\\d{10}$")
+var USER_NAME_REGEX = regexp.MustCompile("^[a-zA-Z]+(?:[\\s.]+[a-zA-Z]+)*$")
 
 type User struct {
 	Name             string    `db:"name"`
@@ -33,8 +37,22 @@ func (u *User) GenerateHashedPassword(key string) (hashedPassword string, err er
 }
 
 func (u *User) Validate() error {
-	if u.Name != "" && u.Email != "" && u.MobileNumber != "" && u.RoleID > 0 && u.ResourceableID > 0 && u.ResourceableType != "" {
+	if isValidUserName(u.Name) && u.Email != "" && isValidMobileNumber(u.MobileNumber) && u.RoleID > 0 && u.ResourceableID > 0 && u.ResourceableType != "" {
 		return nil
 	}
 	return errors.New("Invalid user details")
+}
+
+func isValidMobileNumber(mobileNumber string) bool {
+	if MOBILE_NUMBER_REGEX.MatchString(mobileNumber) {
+		return true
+	}
+	return false
+}
+
+func isValidUserName(name string) bool {
+	if USER_NAME_REGEX.MatchString(name) {
+		return true
+	}
+	return false
 }
