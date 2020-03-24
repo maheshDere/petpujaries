@@ -1,2 +1,1 @@
 name,email,mobile_number,is_active,role_id,resourceable_id,resourceable_type,Errors
-calsoft employee 2,employee2@calsoft.com,,t,1,2,Company,Invalid user details

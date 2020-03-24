@@ -21,11 +21,12 @@ var mealsSheetHeader = []string{"MealName", "Description", "ImageUrl", "Price", 
 var schedulerSheetHeader = []string{"MealID", "MealName", "Date", "Errors"}
 var employeeSheetHeader = []string{"name", "email", "mobile_number", "is_active", "role_id", "resourceable_id", "resourceable_type", "Errors"}
 
-const EMP_SHEET_COLUMN_LENGTH = 7
+const EMP_SHEET_COLUMN_LENGTH = 3
 const MEALS_SHEET_COLUMN_LENGTH = 12
 const MEALS_SCHEDULER_COLUMN_LENGTH = 3
 const DEFAULT_USER_STATUS = true
 const EMPLOYEE_RESOURCEABLE_TYPE = "Company"
+const EMPLOYEE_ROLL_ID = 1
 
 type Pool struct {
 	Workers               int
@@ -354,8 +355,6 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 }
 
 func parseUser(task []string, resourceableID uint64) (user models.User, errs []string) {
-	var err error
-
 	if len(task) != EMP_SHEET_COLUMN_LENGTH {
 		errs = append(errs, fmt.Sprint("Invalid sheet ,contain less information then expected"))
 		return
@@ -365,12 +364,7 @@ func parseUser(task []string, resourceableID uint64) (user models.User, errs []s
 	user.Email = task[1]
 	user.MobileNumber = task[2]
 	user.IsActive = DEFAULT_USER_STATUS
-
-	roleID, err := strconv.ParseInt(task[4], 10, 64)
-	if err != nil {
-		errs = append(errs, fmt.Sprintf("can not parse role ID  value %s", task[5]))
-	}
-	user.RoleID = int(roleID)
+	user.RoleID = EMPLOYEE_ROLL_ID
 
 	user.ResourceableID = resourceableID
 
