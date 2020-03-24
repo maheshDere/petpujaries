@@ -19,7 +19,7 @@ import (
 
 var mealsSheetHeader = []string{"MealName", "Description", "ImageUrl", "Price", "Calories", "IsActive", "Item", "Ingredients", "Meal Type Id", "MealType", "Restaurant Cuisine Id", "CuisineName", "Errors"}
 var schedulerSheetHeader = []string{"MealID", "MealName", "Date", "Errors"}
-var employeeSheetHeader = []string{"name", "email", "mobile_number", "is_active", "role_id", "resourceable_id", "resourceable_type", "Errors"}
+var employeeSheetHeader = []string{"name", "email", "mobile_number", "Errors"}
 
 const EMP_SHEET_COLUMN_LENGTH = 3
 const MEALS_SHEET_COLUMN_LENGTH = 12
