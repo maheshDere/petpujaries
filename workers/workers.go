@@ -2,6 +2,7 @@ package workers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"petpujaris/email"
 	"petpujaris/logger"
@@ -23,6 +24,8 @@ var employeeSheetHeader = []string{"name", "email", "mobile_number", "is_active"
 const EMP_SHEET_COLUMN_LENGTH = 7
 const MEALS_SHEET_COLUMN_LENGTH = 12
 const MEALS_SCHEDULER_COLUMN_LENGTH = 3
+const DEFAULT_USER_STATUS = true
+const EMPLOYEE_RESOURCEABLE_TYPE = "Company"
 
 type Pool struct {
 	Workers               int
@@ -54,10 +57,19 @@ func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]str
 		errorRecords = append(errorRecords, mealsSheetHeader)
 
 	case "employee":
-		for w := 1; w <= p.Workers; w++ {
-			go p.UserWorker(ctx, &wg, tasks, errorlog)
-		}
 		errorRecords = append(errorRecords, employeeSheetHeader)
+		for w := 1; w <= p.Workers; w++ {
+			resourceableID, err := p.UserRepository.GetResourceableID(ctx, uint64(userID))
+			if err != nil {
+				if err == sql.ErrNoRows {
+					errorRecords = append(errorRecords, []string{" ", " ", " ", " ", " ", " ", " ", "unauthorised user to upload employee details"})
+					return errorRecords
+				}
+				errorRecords = append(errorRecords, []string{" ", " ", " ", " ", " ", " ", " ", "Something went wrong please try again"})
+				return errorRecords
+			}
+			go p.UserWorker(ctx, &wg, tasks, errorlog, resourceableID)
+		}
 
 	case "mealscheduler":
 		for w := 1; w <= p.Workers; w++ {
@@ -294,12 +306,12 @@ func parseMealRecord(t []string) (models.Meals, []string) {
 	return mealReord, errs
 }
 
-func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog) {
+func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan []string, errorlog chan<- errorLog, resourceableID uint64) {
 	var err error
 	for task := range tasks {
 		wg.Done()
 		var errorRecord []string
-		user, errs := parseUser(task)
+		user, errs := parseUser(task, resourceableID)
 		if len(errs) != 0 {
 			errorRecord = append(errorRecord, task...)
 			errorRecord = append(errorRecord, strings.Join(errs[:], ","))
@@ -341,7 +353,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 	}
 }
 
-func parseUser(task []string) (user models.User, errs []string) {
+func parseUser(task []string, resourceableID uint64) (user models.User, errs []string) {
 	var err error
 
 	if len(task) != EMP_SHEET_COLUMN_LENGTH {
@@ -352,10 +364,7 @@ func parseUser(task []string) (user models.User, errs []string) {
 	user.Name = task[0]
 	user.Email = task[1]
 	user.MobileNumber = task[2]
-	user.IsActive, err = strconv.ParseBool(task[3])
-	if err != nil {
-		errs = append(errs, fmt.Sprintf("can not parse IsActive  value %s", task[3]))
-	}
+	user.IsActive = DEFAULT_USER_STATUS
 
 	roleID, err := strconv.ParseInt(task[4], 10, 64)
 	if err != nil {
@@ -363,13 +372,9 @@ func parseUser(task []string) (user models.User, errs []string) {
 	}
 	user.RoleID = int(roleID)
 
-	resourceableID, err := strconv.ParseInt(task[5], 10, 64)
-	if err != nil {
-		errs = append(errs, fmt.Sprintf("can not parse resourceableID  value %s", task[6]))
-	}
-	user.ResourceableID = int(resourceableID)
+	user.ResourceableID = resourceableID
 
-	user.ResourceableType = task[6]
+	user.ResourceableType = EMPLOYEE_RESOURCEABLE_TYPE
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
