@@ -322,10 +322,10 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			continue
 		}
 
-		err = user.Validate()
-		if err != nil {
+		errMsgs := user.Validate()
+		if len(errMsgs) != 0 {
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, err.Error())
+			errorRecord = append(errorRecord, strings.Join(errMsgs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}
