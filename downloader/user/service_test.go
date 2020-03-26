@@ -33,7 +33,7 @@ func TestGetPrimaryUserDetails(t *testing.T) {
 		ctx := context.Background()
 		ur, ufs := setup()
 
-		expectedUserPrimaryDetials := [][]string{[]string{"name", "email", "mobile_number"}, []string{" ", " ", " "}, []string{" ", " ", " "}, []string{" ", " ", " "}}
+		expectedUserPrimaryDetials := [][]string{[]string{"name", "email", "mobile_number", "employee_id", "meal_type_id", "meal_type"}, []string{" ", " ", " ", " ", "1", "vegetarian"}, []string{" ", " ", " ", " ", "2", "non vegetarian"}, []string{" ", " ", " ", " ", "1", "vegetarian"}}
 		ur.On("GetResourceableID", ctx, uint64(1)).Return(resourceableID, nil).Once()
 		t.Run("It should return primary user details", func(t *testing.T) {
 			userPrimaryDetials, err := ufs.GetPrimaryUserDetails(ctx, uint64(1), uint64(3))

@@ -1,5 +1,5 @@
-name,email,mobile_number
-" "," "," "
-" "," "," "
-" "," "," "
-" "," "," "
+name,email,mobile_number,employee_id,meal_type_id,meal_type
+" "," "," "," ",1,vegetarian
+" "," "," "," ",2,non vegetarian
+" "," "," "," ",1,vegetarian
+" "," "," "," ",2,non vegetarian

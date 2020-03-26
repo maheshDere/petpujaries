@@ -33,11 +33,17 @@ func (ufs userFileService) GetPrimaryUserDetails(ctx context.Context, adminID, t
 func createPrimaryUserData(ctx context.Context, totalEmployeeCount uint64) (primaryUserDetails [][]string) {
 	primaryUserDetails = make([][]string, 0)
 
-	headers := []string{"name", "email", "mobile_number"}
+	headers := []string{"name", "email", "mobile_number", "employee_id", "meal_type_id", "meal_type"}
 	primaryUserDetails = append(primaryUserDetails, headers)
 
 	for empCount := uint64(0); empCount < totalEmployeeCount; empCount++ {
-		user := []string{" ", " ", " "}
+		mealTypeID := "2"
+		mealType := "non vegetarian"
+		if empCount%2 == 0 {
+			mealTypeID = "1"
+			mealType = "vegetarian"
+		}
+		user := []string{" ", " ", " ", " ", mealTypeID, mealType}
 		primaryUserDetails = append(primaryUserDetails, user)
 	}
 
