@@ -16,7 +16,7 @@ const RollID = 3
 func (ur userRegistry) Save(ctx context.Context, user models.User) (userID int64, err error) {
 	rows, err := ur.client.Query(ctx, CreateUserQuery, user.Name, user.Email, user.MobileNumber, user.IsActive, user.Password, user.RoleID, user.ResourceableID, user.ResourceableType, user.CreatedAt, user.UpdatedAt)
 	if err != nil {
-		logger.LogError(err, "CreateUser", fmt.Sprintf("create user : %v", user))
+		logger.LogError(err, "repository.saveUser", fmt.Sprintf("save user : %v", user))
 		return userID, err
 	}
 
@@ -37,6 +37,16 @@ func (ur userRegistry) GetResourceableID(ctx context.Context, ID uint64) (uint64
 		return resourceableID, err
 	}
 	return resourceableID, nil
+}
+
+func (ur userRegistry) SaveProfile(ctx context.Context, profile models.Profile) (err error) {
+	_, err = ur.client.Exec(ctx, CreateUserProfileQuery, profile.EmployeeID, profile.Credits, profile.NotificationsEnabled, profile.UserID, profile.MealTypeID, profile.CreatedAt, profile.UpdatedAt)
+	if err != nil {
+		logger.LogError(err, "repository.saveUserProfile", fmt.Sprintf("save user profile : %v", profile))
+		return
+	}
+
+	return
 }
 
 func NewUserRegistry(pg Client) userRegistry {

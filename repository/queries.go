@@ -2,7 +2,7 @@ package repository
 
 import "fmt"
 
-var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, DeleteMealsQuery, DeleteMealsItemQuery, DeleteMealIngredientsQuery, SaveMealSchedulerQuery, GetResourceableIDQuery, GetMealTypeQuery, GetRestaurantCuisineQuery, GetRestaurantMealQuery Command
+var FindUserByID, SaveMealsQuery, SaveMealsItemQuery, SaveIngredientsQuery, SaveMealIngredientsQuery, CreateUserQuery, DeleteMealsQuery, DeleteMealsItemQuery, DeleteMealIngredientsQuery, SaveMealSchedulerQuery, GetResourceableIDQuery, GetMealTypeQuery, GetRestaurantCuisineQuery, GetRestaurantMealQuery, CreateUserProfileQuery Command
 
 type Command struct {
 	Query       string
@@ -102,5 +102,11 @@ func init() {
 		Table:       "meals",
 		Description: "FETCH MEALS",
 		Query:       "select DISTINCT meals.id as id, meals.name from %s inner join restaurant_cuisines on restaurant_cuisines.id=meals.restaurant_cuisine_id where restaurant_cuisines.restaurant_id=$1",
+	}
+
+	CreateUserProfileQuery = Command{
+		Table:       "profiles",
+		Description: "Create user Profile",
+		Query:       "insert into %s (employee_id, credits, notifications_enabled, user_id, meal_type_id, created_at, updated_at) values($1, $2, $3, $4, $5, $6, $7)",
 	}
 }

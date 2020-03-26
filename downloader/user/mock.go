@@ -18,3 +18,8 @@ func (m *MockUserRegistry) Save(ctx context.Context, user models.User) (userID i
 	args := m.Called(ctx, user)
 	return args.Get(0).(int64), args.Error(1)
 }
+
+func (m *MockUserRegistry) SaveProfile(ctx context.Context, profile models.Profile) (err error) {
+	args := m.Called(ctx, profile)
+	return args.Error(0)
+}
