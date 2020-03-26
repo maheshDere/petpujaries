@@ -23,3 +23,8 @@ func (m *MockUserRegistry) SaveProfile(ctx context.Context, profile models.Profi
 	args := m.Called(ctx, profile)
 	return args.Error(0)
 }
+
+func (m *MockUserRegistry) Delete(ctx context.Context, ID int64) (err error) {
+	args := m.Called(ctx, ID)
+	return args.Error(0)
+}

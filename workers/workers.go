@@ -19,14 +19,16 @@ import (
 
 var mealsSheetHeader = []string{"MealName", "Description", "ImageUrl", "Price", "Calories", "IsActive", "Item", "Ingredients", "Meal Type Id", "MealType", "Restaurant Cuisine Id", "CuisineName", "Errors"}
 var schedulerSheetHeader = []string{"MealID", "MealName", "Date", "Errors"}
-var employeeSheetHeader = []string{"name", "email", "mobile_number", "Errors"}
+var employeeSheetHeader = []string{"name", "email", "mobile_number", "employee_id", "meal_type_id", "meal_type", "Errors"}
 
-const EMP_SHEET_COLUMN_LENGTH = 3
+const EMP_SHEET_COLUMN_LENGTH = 6
 const MEALS_SHEET_COLUMN_LENGTH = 12
 const MEALS_SCHEDULER_COLUMN_LENGTH = 3
 const DEFAULT_USER_STATUS = true
 const EMPLOYEE_RESOURCEABLE_TYPE = "Company"
 const EMPLOYEE_ROLL_ID = 1
+const DEFAULT_NOTIFICATION_ENABLED = true
+const DEFAULT_CREDITS = 0
 
 type Pool struct {
 	Workers               int
@@ -63,10 +65,10 @@ func (p Pool) Run(ctx context.Context, module string, userID int64, data [][]str
 			resourceableID, err := p.UserRepository.GetResourceableID(ctx, uint64(userID))
 			if err != nil {
 				if err == sql.ErrNoRows {
-					errorRecords = append(errorRecords, []string{" ", " ", " ", " ", " ", " ", " ", "unauthorised user to upload employee details"})
-					return errorRecords
+					errorRecords = append(errorRecords, []string{" ", " ", " ", " ", " ", " ", "unauthorised user to upload employee details"})
+				} else {
+					errorRecords = append(errorRecords, []string{" ", " ", " ", " ", " ", " ", "Something went wrong please try again"})
 				}
-				errorRecords = append(errorRecords, []string{" ", " ", " ", " ", " ", " ", " ", "Something went wrong please try again"})
 				return errorRecords
 			}
 			go p.UserWorker(ctx, &wg, tasks, errorlog, resourceableID)
@@ -263,7 +265,7 @@ func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup
 func parseMealRecord(t []string) (models.Meals, []string) {
 	var errs []string
 	if len(t) != MEALS_SHEET_COLUMN_LENGTH {
-		errs = append(errs, fmt.Sprint("Invalid sheet ,contain less information then expected"))
+		errs = append(errs, fmt.Sprint("Invalid sheet ,contain unexpected information"))
 		return models.Meals{}, errs
 	}
 
@@ -337,7 +339,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			continue
 		}
 
-		_, err = p.UserRepository.Save(ctx, user)
+		userID, err := p.UserRepository.Save(ctx, user)
 		if err != nil {
 			errorRecord = append(errorRecord, task...)
 			errorRecord = append(errorRecord, err.Error())
@@ -345,7 +347,25 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			continue
 		}
 
-		err := p.Emailservice.SendMail(ctx, []string{user.Email}, key)
+		user.Profile.UserID = userID
+		errMsg := user.Profile.Validate()
+		if len(errMsg) != 0 {
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, strings.Join(errMsg[:], ","))
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+
+		err = p.UserRepository.SaveProfile(ctx, user.Profile)
+		if err != nil {
+			p.UserRepository.Delete(ctx, userID)
+			errorRecord = append(errorRecord, task...)
+			errorRecord = append(errorRecord, err.Error())
+			errorlog <- errorLog{Records: errorRecord}
+			continue
+		}
+
+		err = p.Emailservice.SendMail(ctx, []string{user.Email}, key)
 		if err != nil {
 			logger.LogError(err, "worker", fmt.Sprintf("fail to send email for user %v", user.Name))
 		}
@@ -360,18 +380,29 @@ func parseUser(task []string, resourceableID uint64) (user models.User, errs []s
 		return
 	}
 
+	time := time.Now()
 	user.Name = task[0]
 	user.Email = task[1]
 	user.MobileNumber = task[2]
+	user.Profile.EmployeeID = task[3]
+	mealTypeID, err := strconv.ParseInt(task[4], 10, 64)
+	if err != nil {
+		errs = append(errs, fmt.Sprintf("can not parse Meal type ID value %s", task[4]))
+	}
+
+	user.Profile.MealTypeID = mealTypeID
 	user.IsActive = DEFAULT_USER_STATUS
 	user.RoleID = EMPLOYEE_ROLL_ID
 
 	user.ResourceableID = resourceableID
 
 	user.ResourceableType = EMPLOYEE_RESOURCEABLE_TYPE
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
-
+	user.CreatedAt = time
+	user.UpdatedAt = time
+	user.Profile.Credits = DEFAULT_CREDITS
+	user.Profile.NotificationsEnabled = DEFAULT_NOTIFICATION_ENABLED
+	user.Profile.CreatedAt = time
+	user.Profile.UpdatedAt = time
 	return
 }
 

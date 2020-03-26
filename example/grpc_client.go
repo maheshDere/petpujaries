@@ -104,7 +104,7 @@ func main() {
 
 func uploadUsersData(fileName string) error {
 	module := "employee"
-	userID := int64(29)
+	userID := int64(0)
 	err := gc.UploadFile(context.Background(), fileName, module, userID)
 	if err != nil {
 		fmt.Println(err)

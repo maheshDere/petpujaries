@@ -24,6 +24,7 @@ type User struct {
 	ResourceableType string    `db:"resourceable_type"`
 	CreatedAt        time.Time `db:"created_at"`
 	UpdatedAt        time.Time `db:"updated_at"`
+	Profile          Profile
 }
 
 func (u *User) GenerateHashedPassword(key string) (hashedPassword string, err error) {

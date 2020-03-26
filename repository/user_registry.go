@@ -34,6 +34,7 @@ func (ur userRegistry) GetResourceableID(ctx context.Context, ID uint64) (uint64
 	var resourceableID uint64
 	err := ur.client.QueryRow(ctx, GetResourceableIDQuery, ID, RollID).Scan(&resourceableID)
 	if err != nil {
+		logger.LogError(err, "repository.GetResourceableID", fmt.Sprintf("get Resourceable ID : %v", ID))
 		return resourceableID, err
 	}
 	return resourceableID, nil
@@ -43,6 +44,16 @@ func (ur userRegistry) SaveProfile(ctx context.Context, profile models.Profile) 
 	_, err = ur.client.Exec(ctx, CreateUserProfileQuery, profile.EmployeeID, profile.Credits, profile.NotificationsEnabled, profile.UserID, profile.MealTypeID, profile.CreatedAt, profile.UpdatedAt)
 	if err != nil {
 		logger.LogError(err, "repository.saveUserProfile", fmt.Sprintf("save user profile : %v", profile))
+		return
+	}
+
+	return
+}
+
+func (ur userRegistry) Delete(ctx context.Context, ID int64) (err error) {
+	_, err = ur.client.Exec(ctx, DeleteUserQuery, ID)
+	if err != nil {
+		logger.LogError(err, "repository.DeleteUser", fmt.Sprintf("delete user with ID: %v", ID))
 		return
 	}
 
