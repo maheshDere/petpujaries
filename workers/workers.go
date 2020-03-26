@@ -337,7 +337,7 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			continue
 		}
 
-		err = p.UserRepository.Save(ctx, user)
+		_, err = p.UserRepository.Save(ctx, user)
 		if err != nil {
 			errorRecord = append(errorRecord, task...)
 			errorRecord = append(errorRecord, err.Error())

@@ -6,7 +6,7 @@ import (
 )
 
 type UserRegistry interface {
-	Save(ctx context.Context, user models.User) (err error)
+	Save(ctx context.Context, user models.User) (int64, error)
 	GetResourceableID(ctx context.Context, ID uint64) (uint64, error)
 }
 

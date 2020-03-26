@@ -52,7 +52,7 @@ func init() {
 	CreateUserQuery = Command{
 		Table:       "users",
 		Description: "INSERT USERS DETAILS",
-		Query:       "insert into %s (name, email, mobile_number, is_active, password_digest,  role_id,  resourceable_id,  resourceable_type, created_at, updated_at) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+		Query:       "insert into %s (name, email, mobile_number, is_active, password_digest,  role_id,  resourceable_id,  resourceable_type, created_at, updated_at) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id",
 	}
 
 	DeleteMealsItemQuery = Command{

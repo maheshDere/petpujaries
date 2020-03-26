@@ -25,10 +25,10 @@ func TestSendEmail(t *testing.T) {
 		})
 		client.AssertExpectations(t)
 	})
-	t.Run("when WriteEmail method returns an error", func(t *testing.T) {
+	t.Run("when WriteEmail method returns no error", func(t *testing.T) {
 		_, _, _, client, es := setup()
 		client.On("SendMail", context.Background(), "from@mail.com", "password", []string{"destinationmail@mail"}, mock.Anything).Return(nil).Once()
-		t.Run("SendEmail should return an error", func(t *testing.T) {
+		t.Run("SendEmail should return no error", func(t *testing.T) {
 			err := es.SendMail(context.Background(), []string{"destinationmail@mail"}, "password")
 			assert.NoError(t, err)
 		})

@@ -53,9 +53,12 @@ func TestCreateUser(t *testing.T) {
 			UpdatedAt:        time,
 		}
 		t.Run("It shoud return error equal to nil", func(t *testing.T) {
-			err := ur.Save(ctx, user)
+			userID, err := ur.Save(ctx, user)
+			assert.NotEmpty(t, userID)
 			assert.NoError(t, err)
+			deleteUser(int(userID))
 		})
+
 	})
 }
 
