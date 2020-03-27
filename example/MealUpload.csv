@@ -1,4 +1,4 @@
 MealName,Description,ImageUrl,Price,Calories,IsActive,Item,Ingredients,meal_type_id,MealType,restaurant_cuisine_id,CuisineName
-paneer masala combo,NA,,120,201,1,,"paneer, ghee, onion, butter, flour, rice, tomato",1,Veg,1,Healthy
-chicken masala combo,NA,,150,300,1,"chicken masala, 3 roti, half rice, salad","chicken, ginger, garlic, curd, oil, elaichi, pudina",2,Non Veg,2,Indain
-"okra, corn and potatoes in chilli combo",NA,,100,275,1,"okra, corn, potatoes",,1,Veg,1,Healthy
+paneer masala combo,Description of paneer combo ,,120,201,1,,"paneer, ghee, onion, butter, flour, rice, tomato",3,Veg,1,Healthy
+chicken masala combo,Description of chicken masala,,150,300,1,"chicken masala, 3 roti, half rice, salad","chicken, ginger, garlic, curd, oil, elaichi, pudina",2,Non Veg,2,Indain
+"okra, corn and potatoes in chilli combo",Description of chilli combo,,100,275,1,"okra, corn, potatoes",,1,Veg,1,Healthy
