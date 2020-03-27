@@ -368,10 +368,12 @@ func (p Pool) UserWorker(ctx context.Context, wg *sync.WaitGroup, tasks <-chan [
 			continue
 		}
 
-		err = p.Emailservice.SendMail(ctx, []string{user.Email}, key)
-		if err != nil {
-			logger.LogError(err, "worker", fmt.Sprintf("fail to send email for user %v", user.Name))
-		}
+		go func() {
+			err = p.Emailservice.SendMail(ctx, []string{user.Email}, key)
+			if err != nil {
+				logger.LogError(err, "worker", fmt.Sprintf("fail to send email for user %v", user.Name))
+			}
+		}()
 
 		errorlog <- errorLog{}
 	}
