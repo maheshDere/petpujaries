@@ -108,8 +108,8 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 		wg.Done()
 		var errorRecord []string
 		mealRecord, errs := parseMealRecord(t)
-		if err := mealRecord.Validation(); err != nil {
-			errs = append(errs, err.Error())
+		if errMsgs := mealRecord.Validation(); len(errMsgs) != 0 {
+			errs = append(errs, errMsgs...)
 		}
 		if len(errs) != 0 {
 			errorRecord = append(errorRecord, t...)
@@ -151,10 +151,10 @@ func (p Pool) mealWorker(ctx context.Context, wid int, wg *sync.WaitGroup, tasks
 
 func (p Pool) createMealSubWorker(ctx context.Context, mealID int64, itemSplit []string) []string {
 	items := make(chan models.Items, len(itemSplit))
-	errorlog := make(chan error, len(itemSplit))
+	errorlogs := make(chan []string, len(itemSplit))
 	var wgSub sync.WaitGroup
 	for i := 0; i < len(itemSplit); i++ {
-		go p.mealItemSubWorker(ctx, &wgSub, items, errorlog)
+		go p.mealItemSubWorker(ctx, &wgSub, items, errorlogs)
 	}
 
 	for t := 0; t < len(itemSplit); t++ {
@@ -172,31 +172,33 @@ func (p Pool) createMealSubWorker(ctx context.Context, mealID int64, itemSplit [
 
 	var errorRecords []string
 	for t := 0; t < len(itemSplit); t++ {
-		errs := <-errorlog
-		if errs != nil {
-			errorRecords = append(errorRecords, errs.Error())
+		errsMsgs := <-errorlogs
+		if len(errsMsgs) != 0 {
+			errorRecords = append(errorRecords, errsMsgs...)
 		}
 	}
 	wgSub.Wait()
 	return errorRecords
 }
 
-func (p Pool) mealItemSubWorker(ctx context.Context, wgSub *sync.WaitGroup, items <-chan models.Items, errorlog chan<- error) {
+func (p Pool) mealItemSubWorker(ctx context.Context, wgSub *sync.WaitGroup, items <-chan models.Items, errorlog chan<- []string) {
 	for item := range items {
 		wgSub.Done()
-		if err := item.Validation(); err != nil {
-			errorlog <- err
+		if errMsgs := item.Validation(); len(errMsgs) != 0 {
+			errorlog <- errMsgs
 			continue
 		}
 		err := p.MealRegistry.SaveItem(ctx, item)
-		errorlog <- err
+		if err != nil {
+			errorlog <- []string{err.Error()}
+		}
+		errorlog <- []string{}
 	}
-
 }
 
 func (p Pool) createMealIngredientSubWorker(ctx context.Context, mealID int64, ingredientsSplit []string) []string {
 	ingredients := make(chan models.Ingredients, len(ingredientsSplit))
-	errorlog := make(chan error, len(ingredientsSplit))
+	errorlog := make(chan []string, len(ingredientsSplit))
 	var wgSub sync.WaitGroup
 	for i := 0; i < len(ingredientsSplit); i++ {
 		go p.mealIngredientSubWorker(ctx, &wgSub, &mealID, ingredients, errorlog)
@@ -217,25 +219,26 @@ func (p Pool) createMealIngredientSubWorker(ctx context.Context, mealID int64, i
 	var errorRecords []string
 	for t := 0; t < len(ingredientsSplit); t++ {
 		errs := <-errorlog
-		if errs != nil {
-			errorRecords = append(errorRecords, errs.Error())
+		if len(errs) != 0 {
+			errorRecords = append(errorRecords, errs...)
 		}
 	}
 	wgSub.Wait()
 	return errorRecords
+
 }
 
-func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup, mealID *int64, ingredients <-chan models.Ingredients, errorlog chan<- error) {
+func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup, mealID *int64, ingredients <-chan models.Ingredients, errorlog chan<- []string) {
 	for ingredient := range ingredients {
 		wgSub.Done()
-		if err := ingredient.Validation(); err != nil {
-			errorlog <- err
+		if errMsgs := ingredient.Validation(); len(errMsgs) != 0 {
+			errorlog <- errMsgs
 			continue
 		}
 
 		id, err := p.MealRegistry.SaveIngredients(ctx, ingredient)
 		if err != nil {
-			errorlog <- err
+			errorlog <- []string{err.Error()}
 			continue
 		}
 
@@ -246,18 +249,18 @@ func (p Pool) mealIngredientSubWorker(ctx context.Context, wgSub *sync.WaitGroup
 			UpdatedAt:    time.Now(),
 		}
 
-		if err := mealsIngredients.Validation(); err != nil {
-			errorlog <- err
+		if errMsgs := mealsIngredients.Validation(); len(errMsgs) != 0 {
+			errorlog <- errMsgs
 			continue
 		}
 
 		err = p.MealRegistry.SaveMealIngredients(ctx, mealsIngredients)
 		if err != nil {
-			errorlog <- err
+			errorlog <- []string{err.Error()}
 			continue
 		}
 
-		errorlog <- err
+		errorlog <- []string{}
 	}
 
 }
@@ -418,9 +421,9 @@ func (p Pool) SchedulerWorker(ctx context.Context, wg *sync.WaitGroup, userID *i
 			continue
 		}
 		scheduler.UserID = *userID
-		if err := scheduler.Validation(); err != nil {
+		if errMsgs := scheduler.Validation(); len(errMsgs) != 0 {
 			errorRecord = append(errorRecord, task...)
-			errorRecord = append(errorRecord, err.Error())
+			errorRecord = append(errorRecord, strings.Join(errMsgs[:], ","))
 			errorlog <- errorLog{Records: errorRecord}
 			continue
 		}

@@ -1,3 +1,3 @@
-name,email,mobile_number,employee_id,meal_type_id,meal_type,Errors
-User 1234,,1234,User_1,3,non_veg,"Invalid user name,Invalid email,Invalid mobile number"
-pratik," employee1@gmail.com",9884885572,Emp_1,3,non_veg,Invalide meal type id
+MealName,Description,ImageUrl,Price,Calories,IsActive,Item,Ingredients,Meal Type Id,MealType,Restaurant Cuisine Id,CuisineName,Errors
+paneer masala combo,Description of paneer combo ,,120,201,1,,"paneer, ghee, onion, butter, flour, rice, tomato",3,Veg,1,Healthy,Invalid Meal Type ID
+"okra, corn and potatoes in chilli combo",Description of chilli combo,,100,275,1,"okra, corn, potatoes",,1,Veg,1,Healthy,Invalid Meal Ingredient
