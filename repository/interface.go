@@ -6,8 +6,10 @@ import (
 )
 
 type UserRegistry interface {
-	Save(ctx context.Context, user models.User) (err error)
+	Save(ctx context.Context, user models.User) (int64, error)
 	GetResourceableID(ctx context.Context, ID uint64) (uint64, error)
+	Delete(ctx context.Context, ID int64) (err error)
+	SaveProfile(ctx context.Context, profile models.Profile) (err error)
 }
 
 type MealRegistry interface {

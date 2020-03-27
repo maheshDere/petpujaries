@@ -14,7 +14,17 @@ func (m *MockUserRegistry) GetResourceableID(ctx context.Context, ID uint64) (ui
 	return args.Get(0).(uint64), args.Error(1)
 }
 
-func (m *MockUserRegistry) Save(ctx context.Context, user models.User) (err error) {
+func (m *MockUserRegistry) Save(ctx context.Context, user models.User) (userID int64, err error) {
 	args := m.Called(ctx, user)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockUserRegistry) SaveProfile(ctx context.Context, profile models.Profile) (err error) {
+	args := m.Called(ctx, profile)
+	return args.Error(0)
+}
+
+func (m *MockUserRegistry) Delete(ctx context.Context, ID int64) (err error) {
+	args := m.Called(ctx, ID)
 	return args.Error(0)
 }

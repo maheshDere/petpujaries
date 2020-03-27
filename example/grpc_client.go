@@ -104,7 +104,7 @@ func main() {
 
 func uploadUsersData(fileName string) error {
 	module := "employee"
-	userID := int64(29)
+	userID := int64(6)
 	err := gc.UploadFile(context.Background(), fileName, module, userID)
 	if err != nil {
 		fmt.Println(err)
@@ -151,7 +151,7 @@ func DownloadMealSchedulerTemplateData() error {
 
 func (gdc *GRPCDownloaderClient) DownloadUserPrimarydata(ctx context.Context) {
 	var req downloader.EmployeeFileDownloadRequest
-	req.AdminID = uint64(29)
+	req.AdminID = uint64(6)
 	req.TotalEmployeeCount = uint64(4)
 
 	csvFile, err := os.Create("employee_details_template.csv")

@@ -53,9 +53,32 @@ func TestCreateUser(t *testing.T) {
 			UpdatedAt:        time,
 		}
 		t.Run("It shoud return error equal to nil", func(t *testing.T) {
-			err := ur.Save(ctx, user)
+			userID, err := ur.Save(ctx, user)
+			assert.NotEmpty(t, userID)
+			assert.NoError(t, err)
+			deleteUser(int(userID))
+		})
+
+	})
+}
+
+func TestSaveProfile(t *testing.T) {
+	t.Run("when save profile with valid parameters", func(t *testing.T) {
+		time := time.Now()
+		profile := models.Profile{
+			EmployeeID:           "test-employee-id",
+			Credits:              12,
+			UserID:               1,
+			NotificationsEnabled: true,
+			MealTypeID:           1,
+			CreatedAt:            time,
+			UpdatedAt:            time,
+		}
+		t.Run("It shoud return error equal to nil", func(t *testing.T) {
+			err := ur.SaveProfile(ctx, profile)
 			assert.NoError(t, err)
 		})
+		deleteProfile(profile.EmployeeID)
 	})
 }
 
@@ -114,4 +137,13 @@ func deleteUser(ID int) {
 		Query:       "delete from %s where id = $1",
 	}
 	pgClient.Exec(context.Background(), deleteUserQuery, ID)
+}
+
+func deleteProfile(empID string) {
+	deleteUserQuery := Command{
+		Table:       "profiles",
+		Description: "DELETE PROFILE",
+		Query:       "delete from %s where employee_id = $1",
+	}
+	pgClient.Exec(context.Background(), deleteUserQuery, empID)
 }

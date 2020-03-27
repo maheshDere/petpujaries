@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"petpujaris/logger"
 	"regexp"
@@ -24,6 +23,7 @@ type User struct {
 	ResourceableType string    `db:"resourceable_type"`
 	CreatedAt        time.Time `db:"created_at"`
 	UpdatedAt        time.Time `db:"updated_at"`
+	Profile          Profile
 }
 
 func (u *User) GenerateHashedPassword(key string) (hashedPassword string, err error) {
@@ -36,11 +36,28 @@ func (u *User) GenerateHashedPassword(key string) (hashedPassword string, err er
 	return string(byteHashPassword), nil
 }
 
-func (u *User) Validate() error {
-	if isValidUserName(u.Name) && u.Email != "" && isValidMobileNumber(u.MobileNumber) && u.RoleID > 0 && u.ResourceableID > 0 && u.ResourceableType != "" {
-		return nil
+func (u *User) Validate() []string {
+	var errMsg = make([]string, 0)
+	if !isValidUserName(u.Name) {
+		errMsg = append(errMsg, "Invalid user name")
 	}
-	return errors.New("Invalid user details")
+	if u.Email == "" {
+		errMsg = append(errMsg, "Invalid email")
+	}
+	if !isValidMobileNumber(u.MobileNumber) {
+		errMsg = append(errMsg, "Invalid mobile number")
+	}
+	if u.RoleID < 0 {
+		errMsg = append(errMsg, "Invalid role ID")
+	}
+	if u.ResourceableID < 0 {
+		errMsg = append(errMsg, "Invalid Resourceable ID")
+	}
+	if u.ResourceableType == "" {
+		errMsg = append(errMsg, "Invalid Resourceable type")
+
+	}
+	return errMsg
 }
 
 func isValidMobileNumber(mobileNumber string) bool {
