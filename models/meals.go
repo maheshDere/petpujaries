@@ -6,40 +6,40 @@ import (
 )
 
 type Meals struct {
-	ID                  int64     `json:"id" db:"id"`
-	Name                string    `json:"name" db:"name"`
-	Description         string    `json:"description" db:"description"`
-	ImageURL            string    `json:"image_url" db:"image_url"`
-	Price               float32   `json:"price" db:"price"`
-	Calories            float32   `json:"calories" db:"calories"`
-	ISActive            bool      `json:"is_active" db:"is_active"`
-	RestaurantCuisineID int64     `json:"restaurant_cuisine_id" db:"restaurant_cuisine_id"`
-	MealTypeID          int64     `json:"meal_type_id" db:"meal_type_id"`
-	CreatedAt           time.Time `json:"-" db:"created_at"`
-	UpdatedAt           time.Time `json:"-" db:"updated_at"`
+	ID                  int64     `db:"id"`
+	Name                string    `db:"name"`
+	Description         string    `db:"description"`
+	ImageURL            string    `db:"image_url"`
+	Price               float32   `db:"price"`
+	Calories            float32   `db:"calories"`
+	ISActive            bool      `db:"is_active"`
+	RestaurantCuisineID int64     `db:"restaurant_cuisine_id"`
+	MealTypeID          int64     `db:"meal_type_id"`
+	CreatedAt           time.Time `db:"created_at"`
+	UpdatedAt           time.Time `db:"updated_at"`
 }
 
 type Ingredients struct {
-	ID        int64     `json:"id" db:"id"`
-	Name      string    `json:"name" db:"name"`
-	CreatedAt time.Time `json:"-" db:"created_at"`
-	UpdatedAt time.Time `json:"-" db:"updated_at"`
+	ID        int64     `db:"id"`
+	Name      string    `db:"name"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type MealsIngredients struct {
-	ID           int64     `json:"id" db:"id"`
-	MealsID      int64     `json:"meals_id" db:"meals_id"`
-	IngredientID int64     `json:"ingredient_id" db:"ingredient_id"`
-	CreatedAt    time.Time `json:"-" db:"created_at"`
-	UpdatedAt    time.Time `json:"-" db:"updated_at"`
+	ID           int64     `db:"id"`
+	MealsID      int64     `db:"meals_id"`
+	IngredientID int64     `db:"ingredient_id"`
+	CreatedAt    time.Time `db:"created_at"`
+	UpdatedAt    time.Time `db:"updated_at"`
 }
 
 type Items struct {
-	ID        int64     `json:"id" db:"id"`
-	Name      string    `json:"name" db:"name"`
-	MealsID   int64     `json:"meals_id" db:"meals_id"`
-	CreatedAt time.Time `json:"-" db:"created_at"`
-	UpdatedAt time.Time `json:"-" db:"updated_at"`
+	ID        int64     `db:"id"`
+	Name      string    `db:"name"`
+	MealsID   int64     `db:"meals_id"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type MealScheduler struct {
