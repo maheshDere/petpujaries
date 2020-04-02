@@ -27,18 +27,6 @@ func TestXLSXFile_Reader(t *testing.T) {
 			assert.Empty(t, result)
 		})
 	})
-	t.Run("when pass invalid sheet", func(t *testing.T) {
-		xlsxFile := XLSXFile{}
-		file, err := os.Open("../test/BadWorkbook.xlsx")
-		assert.NoError(t, err)
-		defer file.Close()
-		result, err := xlsxFile.Reader(file)
-		expectedError := errors.New("sheet  is not exist")
-		t.Run("it should return an error ", func(t *testing.T) {
-			assert.Equal(t, expectedError.Error(), err.Error())
-			assert.Empty(t, result)
-		})
-	})
 	t.Run("when pass valid data sheet", func(t *testing.T) {
 		xlsxFile := XLSXFile{}
 		file, err := os.Open("../test/Book.xlsx")
